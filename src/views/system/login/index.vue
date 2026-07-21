@@ -28,7 +28,8 @@
             :rules="loginRules"
             label-position="top"
             class="custom-form"
-            @keyup.enter="handleLogin"
+            @submit.prevent="handleLogin"
+            @keyup.enter.prevent="handleLogin"
           >
             <!-- 账号/邮箱 -->
             <el-form-item label="账号" prop="username">
@@ -188,8 +189,9 @@ const fetchCaptcha = async () => {
 
 // 登录提交
 const handleLogin = () => {
+  if (loading.value) return;
   loginFormRef.value.validate(async (valid) => {
-    if (!valid) return;
+    if (!valid || loading.value) return;
 
     loading.value = true;
     try {
@@ -202,9 +204,12 @@ const handleLogin = () => {
 
       ElMessage.success('登录成功，欢迎回来！');
 
-      // 跳转到重定向页或主页
-      const redirectPath = route.query.redirect || '/dashboard';
-      router.push(redirectPath);
+      // 过滤非法的 redirect 路径 (避免重定向回 /login)
+      const targetPath = route.query.redirect && route.query.redirect !== '/login'
+        ? route.query.redirect
+        : '/dashboard';
+      
+      await router.replace(targetPath);
     } catch (error) {
       console.error('Login error:', error);
       // 登录失败若开启了验证码，清空已输入的验证码并自动刷新验证码

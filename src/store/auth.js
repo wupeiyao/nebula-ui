@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia';
 import { login as loginApi, getUserInfo as getUserInfoApi } from '../api/auth/auth.js';
+import { getUserMenuTree } from '../api/system/menu.js';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('nebula_token') || '',
     user: JSON.parse(localStorage.getItem('nebula_user') || 'null'),
     roles: [],
-    permissions: []
+    permissions: [],
+    menus: [],
+    routesLoaded: false
   }),
 
   getters: {
@@ -37,8 +40,12 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('nebula_user', JSON.stringify(user));
         }
 
-        // 登录成功后同步获取用户最新角色和权限信息
-        await this.fetchUserInfo();
+        // 登录成功后同步获取用户最新角色和权限信息 (进行容错捕获，防止异常阻断登录成功流程)
+        try {
+          await this.fetchUserInfo();
+        } catch (userInfoError) {
+          console.warn('同步获取用户信息失败，使用登录接口返回的基础信息:', userInfoError);
+        }
 
         return response;
       } catch (error) {
@@ -70,6 +77,21 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
+     * 获取当前用户的动态菜单树
+     */
+    async fetchUserMenus() {
+      try {
+        const response = await getUserMenuTree();
+        const menuTree = response.result || response.data || [];
+        this.menus = menuTree;
+        return menuTree;
+      } catch (error) {
+        console.error('Fetch user menus failed:', error);
+        throw error;
+      }
+    },
+
+    /**
      * 退出登录，清空缓存与状态
      */
     logout() {
@@ -84,6 +106,8 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.roles = [];
       this.permissions = [];
+      this.menus = [];
+      this.routesLoaded = false;
       localStorage.removeItem('nebula_token');
       localStorage.removeItem('nebula_user');
     }
