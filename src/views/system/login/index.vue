@@ -15,7 +15,7 @@
         <div class="form-wrapper">
           <!-- 头部标题 -->
           <div class="form-header">
-            <h1 class="brand-title">星河学院</h1>
+            <h1 class="brand-title">涛神电竞平台</h1>
             <p class="brand-subtitle">
               登入账户 <span class="sparkle-emoji">✨</span>
             </p>
@@ -117,8 +117,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { User, Lock, Key } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { useAuthStore } from '../store/auth';
-import { getCaptcha } from '../api/auth';
+import { useAuthStore } from '../../../store/auth.js';
+import { getCaptcha } from '../../../api/auth/auth.js';
 
 const router = useRouter();
 const route = useRoute();
@@ -151,7 +151,6 @@ const loginRules = {
   ],
   captchaCode: [
     {
-      required: true,
       validator: (rule, value, callback) => {
         if (showCaptcha.value && !value) {
           callback(new Error('请输入验证码'));
@@ -159,7 +158,7 @@ const loginRules = {
           callback();
         }
       },
-      trigger: 'blur'
+      trigger: ['blur', 'change']
     }
   ]
 };
@@ -191,7 +190,7 @@ const fetchCaptcha = async () => {
 const handleLogin = () => {
   loginFormRef.value.validate(async (valid) => {
     if (!valid) return;
-    
+
     loading.value = true;
     try {
       await authStore.login({
@@ -200,9 +199,9 @@ const handleLogin = () => {
         captchaCode: loginForm.value.captchaCode,
         uuid: loginForm.value.uuid
       });
-      
+
       ElMessage.success('登录成功，欢迎回来！');
-      
+
       // 跳转到重定向页或主页
       const redirectPath = route.query.redirect || '/dashboard';
       router.push(redirectPath);
@@ -259,7 +258,7 @@ onMounted(() => {
   position: relative;
   width: 55%;
   height: 100%;
-  background-image: url('../assets/login-bg.png');
+  background-image: url('../../../assets/login-bg.png');
   background-size: cover;
   background-position: center;
   transition: transform 0.5s ease;
@@ -509,11 +508,11 @@ onMounted(() => {
     width: 460px;
     height: auto;
   }
-  
+
   .login-visual-panel {
     display: none;
   }
-  
+
   .login-form-panel {
     width: 100%;
     padding: 40px 30px;

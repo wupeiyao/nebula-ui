@@ -74,7 +74,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { SwitchButton as Exit } from '@element-plus/icons-vue';
-import { useAuthStore } from '../store/auth';
+import { useAuthStore } from '../../../store/auth.js';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -238,17 +238,17 @@ const handleLogout = () => {
     width: 100%;
     padding: 24px;
   }
-  
+
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .logout-btn {
     width: 100%;
   }
-  
+
   .details-grid,
   .permissions-section {
     grid-template-columns: 1fr;

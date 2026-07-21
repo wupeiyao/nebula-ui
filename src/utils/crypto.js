@@ -10,11 +10,10 @@ import securityConfig from '../config/security';
 export function encryptSM2(text, publicKey = securityConfig.publicKey) {
   if (!text) return '';
   
-  let key = publicKey;
-  // sm-crypto 库进行加密时，如果公钥为 130 位的 04 开头的十六进制字符串，
-  // 需要先去除前导的 '04'，保留 128 位点坐标 (x, y) 传入进行加密
-  if (key.startsWith('04') && key.length === 130) {
-    key = key.substring(2);
+  let key = (publicKey || '').trim();
+  // sm-crypto doEncrypt 需要 130 位的 04 开头的十六进制字符串作为公钥
+  if (!key.startsWith('04') && key.length === 128) {
+    key = '04' + key;
   }
   
   // 使用 cipherMode: 0 代表 C1C2C3 字节排列顺序，匹配后端 CIPHER_MODE_BC (0)

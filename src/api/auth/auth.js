@@ -1,5 +1,5 @@
-import request from '../utils/request';
-import { encryptSM2 } from '../utils/crypto';
+import request from '../../utils/request.js';
+import { encryptSM2 } from '../../utils/crypto.js';
 
 /**
  * 获取图形验证码

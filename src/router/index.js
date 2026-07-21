@@ -5,14 +5,14 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue'),
-    meta: { title: '登入账户 - 精灵学院', requiresAuth: false }
+    component: () => import('../views/system/login/index.vue'),
+    meta: { title: '登入账户 - 涛神电竞', requiresAuth: false }
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('../views/Dashboard.vue'),
-    meta: { title: '工作台 - 精灵学院', requiresAuth: true }
+    component: () => import('../views/system/home/index.vue'),
+    meta: { title: '工作台 - 涛神电竞', requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',
@@ -31,10 +31,10 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.title) {
     document.title = to.meta.title;
   }
-  
+
   const authStore = useAuthStore();
   const token = authStore.token || localStorage.getItem('nebula_token');
-  
+
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // 需要登录的页面
     if (!token) {

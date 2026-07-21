@@ -6,7 +6,6 @@ export default {
   baseURL: 'http://localhost:12568',
 
   // 国密 SM2 公钥 (未压缩格式，以 04 开头，十六进制字符串)
-  // 后端解密时使用相匹配的私钥进行解密。此密钥对可以由国密工具生成。
-  // 提示：请确保这里的公钥与后端配置的私钥是配对的
-  publicKey: '04028c40d7c8f8cec3d4571062ef9c0911d27ddd62c0c38c54ffae92b9d72dceb09b934f13fdd016a132dd57b44d2b1cfc68f5ab6a2266de64f3652e257abe3cae'
+  // 后端解密时使用相匹配的私钥进行解密。
+  publicKey: '043cc8f2f2b55a6c19c8d1fed1d9a893087700aa75420b8e39130611d977140089cbcf1ce4f5062a63161bce9f800e578ea6a3d223b677d55061b2393ef98891ad'
 };
