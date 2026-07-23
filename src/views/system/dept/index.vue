@@ -79,6 +79,7 @@
             class="nebula-modern-table"
             row-key="deptId"
             border
+            height="100%"
           >
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column type="index" label="序号" width="60" align="center" />
@@ -562,6 +563,7 @@ onMounted(()=>{
   display: flex;
   flex-direction: column;
   border-radius: 4px;
+  min-height: 0;
 }
 
 .sidebar-header {
@@ -629,6 +631,7 @@ onMounted(()=>{
   flex-direction: column;
   border-radius: 4px;
   min-width: 0;
+  min-height: 0;
 }
 
 .main-header {
@@ -666,7 +669,7 @@ onMounted(()=>{
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  min-height: 0;
 }
 
 /* Toolbar */

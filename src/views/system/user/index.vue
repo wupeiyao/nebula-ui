@@ -62,6 +62,7 @@
             class="nebula-modern-table"
             @selection-change="handleSelectionChange"
             border
+            height="100%"
           >
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column type="index" label="序号" width="60" align="center" />
@@ -632,7 +633,7 @@ onMounted(() => {
   gap: 16px;
   align-items: stretch;
   height: 100%;
-  min-height: calc(100vh - 120px);
+  min-height: 0;
 }
 
 /* 左侧部门树 */
@@ -644,6 +645,7 @@ onMounted(() => {
   padding: 10px 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .dept-search {
@@ -678,6 +680,7 @@ onMounted(() => {
 .main-card {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   background-color: #ffffff;
   border-radius: 4px;
   padding: 16px;
@@ -732,6 +735,7 @@ onMounted(() => {
 /* 表格容器 */
 .table-wrapper {
   flex: 1;
+  min-height: 0;
 }
 
 .nebula-modern-table {

@@ -1,56 +1,43 @@
 <template>
   <div class="app-container">
+    <!-- 主卡片容器 -->
     <div class="main-card">
       <!-- 搜索表单 -->
       <el-form :model="queryParams" ref="queryRef" :inline="true" class="search-bar">
-        <el-form-item label="系统模块" prop="title">
+        <el-form-item label="模糊搜索" prop="blurry">
           <el-input
-            v-model="queryParams.title"
-            placeholder="请输入系统模块"
+            v-model="queryParams.blurry"
+            placeholder="文件名 / 对象ID"
             clearable
             class="search-input"
             @keyup.enter="handleQuery"
             @clear="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="操作人员" prop="operName">
+        <el-form-item label="存储类型" prop="storage">
+          <el-select
+            v-model="queryParams.storage"
+            placeholder="全部存储类型"
+            clearable
+            class="status-select"
+            @change="handleQuery"
+          >
+            <el-option label="本地存储 (local)" value="local" />
+            <el-option label="MinIO服务 (minio)" value="minio" />
+            <el-option label="阿里云 OSS (oss)" value="oss" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="存储空间" prop="bucket">
           <el-input
-            v-model="queryParams.operName"
-            placeholder="请输入操作人员"
+            v-model="queryParams.bucket"
+            placeholder="存储 Bucket 名称"
             clearable
             class="search-input"
             @keyup.enter="handleQuery"
             @clear="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="类型" prop="businessType">
-          <el-select
-            v-model="queryParams.businessType"
-            placeholder="操作类型"
-            clearable
-            class="status-select"
-            @change="handleQuery"
-          >
-            <el-option label="新增" :value="1" />
-            <el-option label="修改" :value="2" />
-            <el-option label="删除" :value="3" />
-            <el-option label="查询" :value="4" />
-            <el-option label="其它" :value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select
-            v-model="queryParams.status"
-            placeholder="操作状态"
-            clearable
-            class="status-select"
-            @change="handleQuery"
-          >
-            <el-option label="正常" :value="1" />
-            <el-option label="异常" :value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="操作时间">
+        <el-form-item label="创建时间">
           <el-date-picker
             v-model="dateRange"
             type="daterange"
@@ -59,10 +46,10 @@
             end-placeholder="结束日期"
             value-format="YYYY-MM-DD"
             class="date-picker-input"
-          ></el-date-picker>
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleQuery">查询</el-button>
+          <el-button type="primary"  @click="handleQuery">查询</el-button>
           <el-button @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
@@ -77,16 +64,10 @@
           >
             删除
           </el-button>
-          <el-button
-            type="danger"
-            @click="handleClean"
-          >
-            清空
-          </el-button>
         </div>
         <div class="action-right">
           <el-tooltip content="刷新" placement="top">
-            <el-button circle :icon="RefreshRight" class="tool-btn" @click="getList" />
+            <el-button circle class="tool-btn" @click="getList" />
           </el-tooltip>
         </div>
       </div>
@@ -95,51 +76,55 @@
       <div class="table-wrapper">
         <el-table
           v-loading="loading"
-          :data="logList"
+          :data="objectList"
           @selection-change="handleSelectionChange"
           class="nebula-modern-table"
           border
-          height="100%"
         >
           <el-table-column type="selection" width="55" align="center" />
-          <el-table-column label="日志编号" align="center" prop="id" width="100" :show-overflow-tooltip="true" />
-          <el-table-column label="系统模块" align="center" prop="title" :show-overflow-tooltip="true" />
-          <el-table-column label="操作类型" align="center" prop="businessType">
+          <el-table-column label="文件ID" align="center" prop="objectId" min-width="140" :show-overflow-tooltip="true" />
+          <el-table-column label="文件名称" prop="name" min-width="180" :show-overflow-tooltip="true" />
+
+          <el-table-column label="存储类型" align="center" prop="storage" width="120">
             <template #default="scope">
-              <el-tag v-if="scope.row.businessType === 1" type="success" effect="light">新增</el-tag>
-              <el-tag v-else-if="scope.row.businessType === 2" type="warning" effect="light">修改</el-tag>
-              <el-tag v-else-if="scope.row.businessType === 3" type="danger" effect="light">删除</el-tag>
-              <el-tag v-else-if="scope.row.businessType === 4" type="info" effect="light">查询</el-tag>
-              <el-tag v-else type="info" effect="light">其它</el-tag>
+              <span>{{ storageFormat(scope.row.storage) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作人员" align="center" prop="operName" :show-overflow-tooltip="true" />
-          <el-table-column label="主机地址" align="center" prop="operIp" width="130" :show-overflow-tooltip="true" />
-          <el-table-column label="操作状态" align="center" prop="status">
+
+          <el-table-column label="存储空间" align="center" prop="bucket" width="140" :show-overflow-tooltip="true" />
+
+          <el-table-column label="文件后缀" align="center" prop="suffix" width="100">
             <template #default="scope">
-              <span v-if="scope.row.status === 1" class="status-plain active-status">正常</span>
-              <span v-else class="status-plain disabled-status">异常</span>
+              <span class="suffix-badge">{{ scope.row.suffix ? scope.row.suffix.toUpperCase() : '未知' }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作时间" align="center" prop="createTime" width="160" :show-overflow-tooltip="true">
+
+          <el-table-column label="文件大小" align="center" prop="size" width="120">
             <template #default="scope">
-              <span>{{ scope.row.createTime }}</span>
+              <span>{{ formatFileSize(scope.row.size) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="消耗时间" align="center" prop="costTime" width="100" :show-overflow-tooltip="true">
+
+          <el-table-column label="创建人" align="center" prop="creatorName" width="120" :show-overflow-tooltip="true" />
+
+          <el-table-column label="创建时间" align="center" prop="createTime" width="160" :show-overflow-tooltip="true">
             <template #default="scope">
-              <span>{{ scope.row.costTime }}ms</span>
+              <span>{{ scope.row.createTime || '-' }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center" width="120" fixed="right">
+
+          <el-table-column label="操作" align="center" width="150" fixed="right">
             <template #default="scope">
-              <el-button link type="primary" @click="handleView(scope.row)">详细</el-button>
+              <div class="action-links">
+                <el-button link type="primary" class="action-link" @click="handleViewDetail(scope.row)">详细</el-button>
+                <el-button link type="danger" class="action-link action-link-danger" @click="handleDelete(scope.row)">删除</el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
       </div>
 
-      <!-- 分页 -->
+      <!-- 分页区域 -->
       <div class="table-footer">
         <div class="footer-info">
           <span>共 {{ total }} 条</span>
@@ -158,50 +143,54 @@
       </div>
     </div>
 
-    <!-- 操作日志详细 -->
-    <el-dialog v-model="open" title="操作日志详细" width="700px" append-to-body destroy-on-close class="custom-dialog">
-      <el-form :model="form" label-width="100px" class="dialog-form detail-form">
-        <el-row>
+    <!-- 文件元数据详细弹窗 -->
+    <el-dialog v-model="openDetail" title="文件元数据详细" width="720px" append-to-body destroy-on-close class="custom-dialog">
+      <el-form :model="detailForm" label-width="100px" class="dialog-form detail-form">
+        <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="操作模块：">{{ form.title }} / {{ typeFormat(form.businessType) }}</el-form-item>
-            <el-form-item label="登录信息：">{{ form.operName }} / {{ form.operIp }}</el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="请求地址：">{{ form.operUrl }}</el-form-item>
-            <el-form-item label="请求方式：">{{ form.requestMethod }}</el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="操作方法：">{{ form.method }}</el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="请求参数：">
-              <div class="code-box">{{ form.operParam }}</div>
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="返回参数：">
-              <div class="code-box">{{ form.jsonResult }}</div>
-            </el-form-item>
+            <el-form-item label="文件 ID：">{{ detailForm.objectId }}</el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="操作状态：">
-              <el-tag v-if="form.status === 1" type="success">正常</el-tag>
-              <el-tag v-else type="danger">异常</el-tag>
+            <el-form-item label="存储类型：">{{ storageFormat(detailForm.storage) }}</el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="文件名称：">{{ detailForm.name }}</el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="存储空间：">{{ detailForm.bucket }}</el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="文件大小：">{{ formatFileSize(detailForm.size) }}</el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="文件后缀：">{{ detailForm.suffix }}</el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="存储路径：">
+              <div class="code-box path-box">{{ detailForm.path }}</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="消耗时间：">{{ form.costTime }}毫秒</el-form-item>
+            <el-form-item label="创建者：">{{ detailForm.creatorName || '-' }} (ID: {{ detailForm.creatorId || '-' }})</el-form-item>
           </el-col>
-          <el-col :span="24" v-if="form.status === 0">
-            <el-form-item label="异常信息：">
-              <div class="code-box error-box">{{ form.errorMsg }}</div>
+          <el-col :span="12">
+            <el-form-item label="创建时间：">{{ detailForm.createTime || '-' }}</el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="HTTP头部：">
+              <div class="code-box">{{ formatJson(detailForm.headers) }}</div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="自定义元数据：">
+              <div class="code-box">{{ formatJson(detailForm.metadata) }}</div>
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="open = false" class="btn-cancel">关 闭</el-button>
+          <el-button @click="openDetail = false" class="btn-cancel">关 闭</el-button>
         </div>
       </template>
     </el-dialog>
@@ -211,32 +200,31 @@
 <script setup>
 import { ref, reactive, toRefs, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, RefreshRight, Delete, View } from '@element-plus/icons-vue'
-import { getAuditLogList, delAuditLog, cleanAuditLog } from '../../../../api/system/auditLog.js'
+import { Search, Refresh, RefreshRight, Delete } from '@element-plus/icons-vue'
+import { getObjectList, delObject, delObjectById } from '../../../api/system/object.js'
 
 const loading = ref(true)
 const ids = ref([])
 const multiple = ref(true)
 const total = ref(0)
-const logList = ref([])
-const open = ref(false)
+const objectList = ref([])
+const openDetail = ref(false)
 const dateRange = ref([])
-const form = ref({})
+const detailForm = ref({})
 
 const data = reactive({
   queryParams: {
     pageIndex: 1,
     pageSize: 10,
-    title: undefined,
-    operName: undefined,
-    businessType: undefined,
-    status: undefined
+    blurry: undefined,
+    storage: undefined,
+    bucket: undefined
   }
 })
 
 const { queryParams } = toRefs(data)
 
-/** 查询登录日志 */
+/** 查询文件列表 */
 const getList = async () => {
   loading.value = true
   try {
@@ -245,27 +233,15 @@ const getList = async () => {
       params.startTime = dateRange.value[0] + ' 00:00:00'
       params.endTime = dateRange.value[1] + ' 23:59:59'
     }
-    const res = await getAuditLogList(params)
-    const pageData = res.result || res.data || {}
-    logList.value = pageData.list || []
+    const res = await getObjectList(params)
+    const pageData = res.result || res.data || res
+    objectList.value = pageData.list || []
     total.value = pageData.total || 0
   } catch (error) {
-    console.error('查询异常', error)
+    console.error('获取文件列表失败:', error)
   } finally {
     loading.value = false
   }
-}
-
-/** 操作日志类型字典翻译 */
-const typeFormat = (type) => {
-  const map = {
-    1: '新增',
-    2: '修改',
-    3: '删除',
-    4: '查询',
-    0: '其它'
-  }
-  return map[type] || '其它'
 }
 
 /** 搜索按钮操作 */
@@ -277,49 +253,43 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   dateRange.value = []
-  queryParams.value.title = undefined
-  queryParams.value.operName = undefined
-  queryParams.value.businessType = undefined
-  queryParams.value.status = undefined
+  queryParams.value.blurry = undefined
+  queryParams.value.storage = undefined
+  queryParams.value.bucket = undefined
   handleQuery()
 }
 
 /** 多选框选中数据 */
 const handleSelectionChange = (selection) => {
-  ids.value = selection.map(item => item.id)
+  ids.value = selection.map(item => item.objectId)
   multiple.value = !selection.length
 }
 
-/** 详细按钮操作 */
-const handleView = (row) => {
-  open.value = true
-  form.value = { ...row }
+/** 查看元数据详细 */
+const handleViewDetail = (row) => {
+  detailForm.value = { ...row }
+  openDetail.value = true
 }
 
 /** 删除按钮操作 */
-const handleDelete = () => {
-  const logIds = ids.value
-  ElMessageBox.confirm(`是否确认删除日志编号为"${logIds}"的数据项？`, '警告', {
+const handleDelete = (row) => {
+  const targetIds = row.objectId ? [row.objectId] : ids.value
+  const confirmMsg = row.objectId
+    ? `是否确认删除文件名称为 "${row.name}" 的数据项？`
+    : `是否确认删除所选的 ${targetIds.length} 项文件元数据？`
+
+  ElMessageBox.confirm(confirmMsg, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(async () => {
-    await delAuditLog(logIds)
+    if (row.objectId) {
+      await delObjectById(row.objectId)
+    } else {
+      await delObject(targetIds)
+    }
     getList()
     ElMessage.success('删除成功')
-  }).catch(() => {})
-}
-
-/** 清空按钮操作 */
-const handleClean = () => {
-  ElMessageBox.confirm('是否确认清空所有操作日志数据项？', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    await cleanAuditLog()
-    getList()
-    ElMessage.success('清空成功')
   }).catch(() => {})
 }
 
@@ -331,6 +301,36 @@ const handleSizeChange = (val) => {
 const handleCurrentChange = (val) => {
   queryParams.value.pageIndex = val
   getList()
+}
+
+/** 工具方法: 存储类型字典转换 */
+const storageFormat = (storage) => {
+  const map = {
+    local: '本地存储',
+    minio: 'MinIO',
+    oss: '阿里云 OSS'
+  }
+  return map[storage] || storage || '-'
+}
+
+/** 工具方法: 文件大小格式化 */
+const formatFileSize = (bytes) => {
+  if (bytes === 0 || bytes === null || bytes === undefined) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+/** 工具方法: 格式化 JSON 显示 */
+const formatJson = (str) => {
+  if (!str) return '-'
+  try {
+    const obj = typeof str === 'string' ? JSON.parse(str) : str
+    return JSON.stringify(obj, null, 2)
+  } catch (e) {
+    return str
+  }
 }
 
 onMounted(() => {
@@ -352,7 +352,6 @@ onMounted(() => {
 /* 主面板容器 */
 .main-card {
   flex: 1;
-  min-height: 0;
   background-color: #ffffff;
   border-radius: 4px;
   padding: 16px;
@@ -380,7 +379,7 @@ onMounted(() => {
 }
 
 .status-select {
-  width: 150px;
+  width: 180px;
 }
 
 .date-picker-input {
@@ -413,7 +412,6 @@ onMounted(() => {
 /* 表格容器与基础控制 */
 .table-wrapper {
   flex: 1;
-  min-height: 0;
 }
 
 .nebula-modern-table {
@@ -435,23 +433,36 @@ onMounted(() => {
   color: #606266;
 }
 
-/* 状态样式 */
-.status-plain {
-  font-size: 12px;
+.suffix-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #606266;
+  background-color: #f4f4f5;
   padding: 2px 6px;
-  border-radius: 2px;
-  display: inline-block;
-  line-height: 1.2;
+  border-radius: 3px;
+  border: 1px solid #e9e9eb;
 }
-.active-status {
-  color: #409eff;
-  border: 1px solid #d9ecff;
-  background-color: #ecf5ff;
+
+/* 操作列链接 */
+.action-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
-.disabled-status {
+
+.action-link {
+  font-size: 13px;
+  padding: 0;
+  height: auto;
+  margin: 0 !important;
+}
+
+.action-link-danger {
   color: #f56c6c;
-  border: 1px solid #fde2e2;
-  background-color: #fef0f0;
+}
+.action-link-danger:hover {
+  color: #f78989;
 }
 
 /* 表格底部 footer */
@@ -484,7 +495,7 @@ onMounted(() => {
 }
 
 .detail-form .el-form-item {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .code-box {
@@ -494,17 +505,19 @@ onMounted(() => {
   padding: 8px 12px;
   width: 100%;
   font-family: Consolas, Monaco, monospace;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.5;
   color: #303133;
   word-break: break-all;
   white-space: pre-wrap;
-  max-height: 200px;
+  max-height: 160px;
   overflow-y: auto;
 }
 
-.error-box {
-  color: #f56c6c;
+.path-box {
+  color: #409eff;
+  background-color: #ecf5ff;
+  border-color: #d9ecff;
 }
 
 .dialog-footer {

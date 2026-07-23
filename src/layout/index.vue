@@ -6,9 +6,10 @@
         <!-- Logo 区域 -->
         <div class="brand-logo" :class="{ 'is-collapsed': isCollapsed }">
           <div class="logo-badge">
-            <el-icon><Platform /></el-icon>
+            <img v-if="systemConfigStore.sysLogo" :src="systemConfigStore.sysLogo" class="logo-img" alt="Logo" />
+            <el-icon v-else><Platform /></el-icon>
           </div>
-          <span v-if="!isCollapsed" class="brand-title">涛涛电竞一体化运营平台</span>
+          <span v-if="!isCollapsed" class="brand-title">{{ systemConfigStore.sysName }}</span>
         </div>
       </div>
 
@@ -128,10 +129,12 @@ import {
 import SidebarItem from './components/SidebarItem.vue';
 import TagsView from './components/TagsView.vue';
 import { useAuthStore } from '../store/auth.js';
+import { useSystemConfigStore } from '../store/systemConfig.js';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const systemConfigStore = useSystemConfigStore();
 
 // 侧边栏折叠状态
 const isCollapsed = ref(false);
@@ -174,7 +177,7 @@ const toggleTheme = () => {
 };
 
 const handleHelp = () => {
-  ElMessage.info('涛神管理控制台 v1.0.0');
+  ElMessage.info(`${systemConfigStore.sysName} ${systemConfigStore.sysVersion}`);
 };
 
 // 全屏功能
@@ -206,6 +209,7 @@ const handleCommand = (command) => {
 };
 
 onMounted(async () => {
+  systemConfigStore.fetchPublicConfig();
   if (!authStore.menus || authStore.menus.length === 0) {
     try {
       await authStore.fetchUserMenus();
@@ -272,6 +276,13 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   font-size: 20px;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .brand-title {
@@ -385,7 +396,7 @@ onMounted(async () => {
   margin: 0 !important;
   border-radius: 0 !important;
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   align-items: center !important;
 }
 
@@ -508,6 +519,9 @@ onMounted(async () => {
   padding: 0px;
   overflow-y: auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* 动效 */

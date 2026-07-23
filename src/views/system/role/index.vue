@@ -52,14 +52,16 @@
       </div>
 
       <!-- 数据表格展示区域 -->
-      <el-table
-        v-loading="loading"
-        :data="roleList"
-        row-key="roleId"
-        class="nebula-modern-table"
-        @selection-change="handleSelectionChange"
-        border
-      >
+      <div class="table-wrapper">
+        <el-table
+          v-loading="loading"
+          :data="roleList"
+          row-key="roleId"
+          class="nebula-modern-table"
+          @selection-change="handleSelectionChange"
+          border
+          height="100%"
+        >
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="roleName" label="角色名称" min-width="150" :show-overflow-tooltip="true" />
@@ -89,7 +91,8 @@
             </div>
           </template>
         </el-table-column>
-      </el-table>
+        </el-table>
+      </div>
 
       <!-- 表格底部汇总与分页 -->
       <div class="pagination-container">
@@ -439,14 +442,18 @@ onMounted(() => {
 
 <style scoped>
 .role-management-container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   background-color: #f0f2f5;
   padding: 16px;
   box-sizing: border-box;
 }
 
 .main-card {
+  flex: 1;
+  min-height: 0;
   background: #ffffff;
   border-radius: 4px;
   display: flex;
@@ -477,6 +484,12 @@ onMounted(() => {
 }
 :deep(.action-bar .el-button) {
   border-radius: 4px;
+}
+
+/* 表格与操作列 */
+.table-wrapper {
+  flex: 1;
+  min-height: 0;
 }
 
 /* 表格与操作列 */

@@ -3,54 +3,39 @@
     <div class="main-card">
       <!-- 搜索表单 -->
       <el-form :model="queryParams" ref="queryRef" :inline="true" class="search-bar">
-        <el-form-item label="系统模块" prop="title">
+        <el-form-item label="用户账号" prop="username">
           <el-input
-            v-model="queryParams.title"
-            placeholder="请输入系统模块"
+            v-model="queryParams.username"
+            placeholder="请输入用户账号"
             clearable
             class="search-input"
             @keyup.enter="handleQuery"
             @clear="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="操作人员" prop="operName">
+        <el-form-item label="登录IP" prop="ipaddr">
           <el-input
-            v-model="queryParams.operName"
-            placeholder="请输入操作人员"
+            v-model="queryParams.ipaddr"
+            placeholder="请输入登录IP"
             clearable
             class="search-input"
             @keyup.enter="handleQuery"
             @clear="handleQuery"
           />
-        </el-form-item>
-        <el-form-item label="类型" prop="businessType">
-          <el-select
-            v-model="queryParams.businessType"
-            placeholder="操作类型"
-            clearable
-            class="status-select"
-            @change="handleQuery"
-          >
-            <el-option label="新增" :value="1" />
-            <el-option label="修改" :value="2" />
-            <el-option label="删除" :value="3" />
-            <el-option label="查询" :value="4" />
-            <el-option label="其它" :value="0" />
-          </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select
             v-model="queryParams.status"
-            placeholder="操作状态"
+            placeholder="登录状态"
             clearable
             class="status-select"
             @change="handleQuery"
           >
-            <el-option label="正常" :value="1" />
-            <el-option label="异常" :value="0" />
+            <el-option label="成功" value="0" />
+            <el-option label="失败" value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item label="操作时间">
+        <el-form-item label="访问时间">
           <el-date-picker
             v-model="dateRange"
             type="daterange"
@@ -102,36 +87,25 @@
           height="100%"
         >
           <el-table-column type="selection" width="55" align="center" />
-          <el-table-column label="日志编号" align="center" prop="id" width="100" :show-overflow-tooltip="true" />
-          <el-table-column label="系统模块" align="center" prop="title" :show-overflow-tooltip="true" />
-          <el-table-column label="操作类型" align="center" prop="businessType">
+          <el-table-column label="访问编号" align="center" prop="infoId" width="130" :show-overflow-tooltip="true" />
+          <el-table-column label="用户账号" align="center" prop="username" width="140" :show-overflow-tooltip="true" />
+          <el-table-column label="登录IP" align="center" prop="ipaddr" width="130" :show-overflow-tooltip="true" />
+          <el-table-column label="登录地点" align="center" prop="loginLocation" width="120" :show-overflow-tooltip="true" />
+          <el-table-column label="浏览器" align="center" prop="browser" width="140" :show-overflow-tooltip="true" />
+          <el-table-column label="操作系统" align="center" prop="os" width="130" :show-overflow-tooltip="true" />
+          <el-table-column label="登录状态" align="center" prop="status" width="100">
             <template #default="scope">
-              <el-tag v-if="scope.row.businessType === 1" type="success" effect="light">新增</el-tag>
-              <el-tag v-else-if="scope.row.businessType === 2" type="warning" effect="light">修改</el-tag>
-              <el-tag v-else-if="scope.row.businessType === 3" type="danger" effect="light">删除</el-tag>
-              <el-tag v-else-if="scope.row.businessType === 4" type="info" effect="light">查询</el-tag>
-              <el-tag v-else type="info" effect="light">其它</el-tag>
+              <span v-if="scope.row.status === '0'" class="status-plain active-status">成功</span>
+              <span v-else class="status-plain disabled-status">失败</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作人员" align="center" prop="operName" :show-overflow-tooltip="true" />
-          <el-table-column label="主机地址" align="center" prop="operIp" width="130" :show-overflow-tooltip="true" />
-          <el-table-column label="操作状态" align="center" prop="status">
+          <el-table-column label="提示消息" align="center" prop="msg" :show-overflow-tooltip="true" />
+          <el-table-column label="访问时间" align="center" prop="loginTime" width="170" :show-overflow-tooltip="true">
             <template #default="scope">
-              <span v-if="scope.row.status === 1" class="status-plain active-status">正常</span>
-              <span v-else class="status-plain disabled-status">异常</span>
+              <span>{{ scope.row.loginTime }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作时间" align="center" prop="createTime" width="160" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <span>{{ scope.row.createTime }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="消耗时间" align="center" prop="costTime" width="100" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <span>{{ scope.row.costTime }}ms</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="center" width="120" fixed="right">
+          <el-table-column label="操作" align="center" width="100" fixed="right">
             <template #default="scope">
               <el-button link type="primary" @click="handleView(scope.row)">详细</el-button>
             </template>
@@ -158,43 +132,35 @@
       </div>
     </div>
 
-    <!-- 操作日志详细 -->
-    <el-dialog v-model="open" title="操作日志详细" width="700px" append-to-body destroy-on-close class="custom-dialog">
+    <!-- 登录日志详细 -->
+    <el-dialog v-model="open" title="登录日志详细" width="650px" append-to-body destroy-on-close class="custom-dialog">
       <el-form :model="form" label-width="100px" class="dialog-form detail-form">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="操作模块：">{{ form.title }} / {{ typeFormat(form.businessType) }}</el-form-item>
-            <el-form-item label="登录信息：">{{ form.operName }} / {{ form.operIp }}</el-form-item>
+            <el-form-item label="访问编号：">{{ form.infoId }}</el-form-item>
+            <el-form-item label="用户账号：">{{ form.username }}</el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="请求地址：">{{ form.operUrl }}</el-form-item>
-            <el-form-item label="请求方式：">{{ form.requestMethod }}</el-form-item>
+            <el-form-item label="登录IP：">{{ form.ipaddr }}</el-form-item>
+            <el-form-item label="登录地点：">{{ form.loginLocation }}</el-form-item>
           </el-col>
-          <el-col :span="24">
-            <el-form-item label="操作方法：">{{ form.method }}</el-form-item>
+          <el-col :span="12">
+            <el-form-item label="浏览器：">{{ form.browser }}</el-form-item>
+            <el-form-item label="操作系统：">{{ form.os }}</el-form-item>
           </el-col>
-          <el-col :span="24">
-            <el-form-item label="请求参数：">
-              <div class="code-box">{{ form.operParam }}</div>
+          <el-col :span="12">
+            <el-form-item label="客户端：">{{ form.client || 'PC' }}</el-form-item>
+            <el-form-item label="访问时间：">{{ form.loginTime }}</el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="登录状态：">
+              <el-tag v-if="form.status === '0'" type="success">成功</el-tag>
+              <el-tag v-else type="danger">失败</el-tag>
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="返回参数：">
-              <div class="code-box">{{ form.jsonResult }}</div>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="操作状态：">
-              <el-tag v-if="form.status === 1" type="success">正常</el-tag>
-              <el-tag v-else type="danger">异常</el-tag>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="消耗时间：">{{ form.costTime }}毫秒</el-form-item>
-          </el-col>
-          <el-col :span="24" v-if="form.status === 0">
-            <el-form-item label="异常信息：">
-              <div class="code-box error-box">{{ form.errorMsg }}</div>
+            <el-form-item label="提示消息：">
+              <div class="code-box" :class="{ 'error-box': form.status !== '0' }">{{ form.msg }}</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -211,11 +177,11 @@
 <script setup>
 import { ref, reactive, toRefs, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, RefreshRight, Delete, View } from '@element-plus/icons-vue'
-import { getAuditLogList, delAuditLog, cleanAuditLog } from '../../../../api/system/auditLog.js'
+import { RefreshRight } from '@element-plus/icons-vue'
+import { listLogininfor, delLogininfor, cleanLogininfor } from '../../../api/system/logininfor.js'
 
 const loading = ref(true)
-const ids = ref([])
+const infoIds = ref([])
 const multiple = ref(true)
 const total = ref(0)
 const logList = ref([])
@@ -227,16 +193,15 @@ const data = reactive({
   queryParams: {
     pageIndex: 1,
     pageSize: 10,
-    title: undefined,
-    operName: undefined,
-    businessType: undefined,
+    username: undefined,
+    ipaddr: undefined,
     status: undefined
   }
 })
 
 const { queryParams } = toRefs(data)
 
-/** 查询登录日志 */
+/** 查询登录日志列表 */
 const getList = async () => {
   loading.value = true
   try {
@@ -245,27 +210,15 @@ const getList = async () => {
       params.startTime = dateRange.value[0] + ' 00:00:00'
       params.endTime = dateRange.value[1] + ' 23:59:59'
     }
-    const res = await getAuditLogList(params)
+    const res = await listLogininfor(params)
     const pageData = res.result || res.data || {}
     logList.value = pageData.list || []
     total.value = pageData.total || 0
   } catch (error) {
-    console.error('查询异常', error)
+    console.error('查询登录日志异常', error)
   } finally {
     loading.value = false
   }
-}
-
-/** 操作日志类型字典翻译 */
-const typeFormat = (type) => {
-  const map = {
-    1: '新增',
-    2: '修改',
-    3: '删除',
-    4: '查询',
-    0: '其它'
-  }
-  return map[type] || '其它'
 }
 
 /** 搜索按钮操作 */
@@ -277,16 +230,15 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   dateRange.value = []
-  queryParams.value.title = undefined
-  queryParams.value.operName = undefined
-  queryParams.value.businessType = undefined
+  queryParams.value.username = undefined
+  queryParams.value.ipaddr = undefined
   queryParams.value.status = undefined
   handleQuery()
 }
 
 /** 多选框选中数据 */
 const handleSelectionChange = (selection) => {
-  ids.value = selection.map(item => item.id)
+  infoIds.value = selection.map(item => item.infoId)
   multiple.value = !selection.length
 }
 
@@ -298,13 +250,13 @@ const handleView = (row) => {
 
 /** 删除按钮操作 */
 const handleDelete = () => {
-  const logIds = ids.value
-  ElMessageBox.confirm(`是否确认删除日志编号为"${logIds}"的数据项？`, '警告', {
+  const ids = infoIds.value
+  ElMessageBox.confirm(`是否确认删除访问编号为"${ids}"的数据项？`, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(async () => {
-    await delAuditLog(logIds)
+    await delLogininfor(ids)
     getList()
     ElMessage.success('删除成功')
   }).catch(() => {})
@@ -312,12 +264,12 @@ const handleDelete = () => {
 
 /** 清空按钮操作 */
 const handleClean = () => {
-  ElMessageBox.confirm('是否确认清空所有操作日志数据项？', '警告', {
+  ElMessageBox.confirm('是否确认清空所有系统登录日志数据项？', '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(async () => {
-    await cleanAuditLog()
+    await cleanLogininfor()
     getList()
     ElMessage.success('清空成功')
   }).catch(() => {})
@@ -376,11 +328,11 @@ onMounted(() => {
 }
 
 .search-input {
-  width: 200px;
+  width: 180px;
 }
 
 .status-select {
-  width: 150px;
+  width: 130px;
 }
 
 .date-picker-input {
@@ -444,9 +396,9 @@ onMounted(() => {
   line-height: 1.2;
 }
 .active-status {
-  color: #409eff;
-  border: 1px solid #d9ecff;
-  background-color: #ecf5ff;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+  background-color: #f0f9eb;
 }
 .disabled-status {
   color: #f56c6c;
@@ -499,7 +451,7 @@ onMounted(() => {
   color: #303133;
   word-break: break-all;
   white-space: pre-wrap;
-  max-height: 200px;
+  max-height: 150px;
   overflow-y: auto;
 }
 

@@ -77,7 +77,12 @@ const routes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('../views/system/home/index.vue'),
-        meta: { title: '首页 - 涛神系统', requiresAuth: true }
+        meta: { title: '首页', affix: true, requiresAuth: true }
+      },
+      {
+        path: '/redirect/:path(.*)*',
+        component: () => import('../views/redirect/index.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },

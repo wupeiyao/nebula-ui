@@ -31,9 +31,9 @@ service.interceptors.response.use(
     const res = response.data;
     
     // 兼容后端 CommonResponse.java 返回格式
-    // 成功状态码通常为 200 整数或字符串 "200"
-    if (res.status === 200 || res.code === '200') {
-      return res; // 返回整个响应对象，包含 result 字段
+    // 成功状态码通常为 200 整数或字符串 "200"，或直接返回的分页结果对象(包含 list/records 与 total 字段)
+    if (res.status === 200 || res.code === '200' || (res.list !== undefined && res.total !== undefined) || (res.records !== undefined && res.total !== undefined)) {
+      return res; // 返回整个响应对象
     } else {
       // 业务错误处理
       const errorMsg = res.message || '系统错误，请稍后重试';

@@ -40,10 +40,10 @@
         </div>
         <div class="action-right">
           <el-tooltip content="隐藏/显示搜索" placement="top">
-            <el-button circle :icon="Search" class="tool-btn" />
+            <el-button circle class="tool-btn" />
           </el-tooltip>
           <el-tooltip content="刷新" placement="top">
-            <el-button circle :icon="RefreshRight" class="tool-btn" @click="getList" />
+            <el-button circle class="tool-btn" @click="getList" />
           </el-tooltip>
         </div>
       </div>
@@ -59,6 +59,7 @@
           :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
           class="nebula-modern-table"
           border
+          height="100%"
         >
           <el-table-column prop="menuName" label="菜单名称" min-width="210" :show-overflow-tooltip="true">
             <template #default="scope">
@@ -74,20 +75,20 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="orderNum" label="排序" align="center" width="80" />
+          <el-table-column prop="orderNum" label="排序" align="center" width="80" :show-overflow-tooltip="true" />
 
           <el-table-column prop="perms" label="权限标识" min-width="160" :show-overflow-tooltip="true" />
 
           <el-table-column prop="component" label="组件路径" min-width="170" :show-overflow-tooltip="true" />
 
-          <el-table-column prop="status" label="状态" align="center" width="100">
+          <el-table-column prop="status" label="状态" align="center" width="100" :show-overflow-tooltip="true">
             <template #default="scope">
               <span v-if="scope.row.status === '0'" class="status-plain active-status">正常</span>
               <span v-else class="status-plain disabled-status">停用</span>
             </template>
           </el-table-column>
 
-          <el-table-column prop="createTime" label="创建时间" align="center" width="160">
+          <el-table-column prop="createTime" label="创建时间" align="center" width="160" :show-overflow-tooltip="true">
             <template #default="scope">
               <span>{{ scope.row.createTime || '-' }}</span>
             </template>
@@ -532,6 +533,7 @@ onMounted(() => {
 /* 主面板容器 */
 .main-card {
   flex: 1;
+  min-height: 0;
   background-color: #ffffff;
   border-radius: 4px;
   padding: 16px;
@@ -594,6 +596,7 @@ onMounted(() => {
 /* 表格容器与基础控制 */
 .table-wrapper {
   flex: 1;
+  min-height: 0;
 }
 
 .nebula-modern-table {
