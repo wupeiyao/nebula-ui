@@ -5,8 +5,8 @@
       <div class="login-visual-panel">
         <div class="visual-overlay"></div>
         <div class="visual-content">
-          <h2 class="visual-title">Nebula Platform</h2>
-          <p class="visual-subtitle">探索未知，连接未来</p>
+          <h2 class="visual-title">涛涛电竞游戏陪玩平台</h2>
+          <p class="visual-subtitle">寻找默契玩伴，开启你的上分之旅</p>
         </div>
       </div>
 
@@ -15,9 +15,9 @@
         <div class="form-wrapper">
           <!-- 头部标题 -->
           <div class="form-header">
-            <h1 class="brand-title">涛神电竞平台</h1>
+            <h1 class="brand-title">涛涛电竞一体化运营平台</h1>
             <p class="brand-subtitle">
-              登入账户 <span class="sparkle-emoji">✨</span>
+              登入专属账号，连接游戏世界 <span class="sparkle-emoji">🎮</span>
             </p>
           </div>
 
@@ -455,19 +455,19 @@ onMounted(() => {
   width: 100%;
   height: 42px;
   border-radius: 8px;
-  background-color: #0066ff;
-  border-color: #0066ff;
+  background: linear-gradient(135deg, #7b2cbf 0%, #3a0ca3 100%);
+  border: none;
+  color: #fff;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
-  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+  transition: all 0.3s ease;
 }
 
 .login-button:hover {
-  background-color: #0052cc;
-  border-color: #0052cc;
-  box-shadow: 0 6px 16px rgba(0, 102, 255, 0.35);
+  background: linear-gradient(135deg, #9d4edd 0%, #4361ee 100%);
+  box-shadow: 0 6px 16px rgba(157, 78, 221, 0.4);
   transform: translateY(-1px);
 }
 
