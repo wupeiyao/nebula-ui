@@ -1,56 +1,49 @@
 <template>
   <div class="menu-management-container">
-    <!-- 页面顶栏标题与描述说明 -->
-    <div class="page-header">
-      <div class="header-left">
-        <h2 class="page-title">菜单管理</h2>
-        <p class="page-desc">配置与管理系统的树形导航结构、路由组件与按钮操作权限</p>
-      </div>
-    </div>
-
     <!-- 操作与表格主区域面板 -->
     <div class="main-card">
-      <!-- 综合工具栏（融合参考图中“创建操作 + 右侧搜索过滤”布局） -->
-      <div class="toolbar-wrapper">
-        <div class="toolbar-left">
-          <el-button type="primary" class="btn-create" :icon="Plus" @click="handleAdd('0')">
-            新建菜单
-          </el-button>
-          <el-button class="btn-secondary" :icon="Sort" @click="toggleExpandAll">
-            {{ isExpandAll ? '折叠全部' : '展开全部' }}
-          </el-button>
+      <!-- 搜索栏 -->
+      <el-form :model="queryParams" ref="queryRef" :inline="true" class="search-bar">
+        <el-form-item label="菜单名称" prop="menuName">
+          <el-input
+            v-model="queryParams.menuName"
+            placeholder="请输入菜单名称"
+            clearable
+            @keyup.enter="handleQuery"
+            @clear="handleQuery"
+            class="search-input"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select
+            v-model="queryParams.status"
+            placeholder="菜单状态"
+            clearable
+            class="status-select"
+            @change="handleQuery"
+          >
+            <el-option label="正常" value="0" />
+            <el-option label="停用" value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleQuery">查询</el-button>
+          <el-button @click="resetQuery">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <!-- 操作栏 -->
+      <div class="action-bar">
+        <div class="action-left">
+          <el-button type="primary" @click="handleAdd('0')">新增</el-button>
+          <el-button type="primary" @click="toggleExpandAll">展开/折叠</el-button>
         </div>
-
-        <div class="toolbar-right">
-          <!-- 搜索过滤组 -->
-          <div class="search-group">
-            <el-input
-              v-model="queryParams.menuName"
-              placeholder="搜索菜单名称"
-              clearable
-              :prefix-icon="Search"
-              class="search-input"
-              @keyup.enter="handleQuery"
-              @clear="handleQuery"
-            />
-            <el-select
-              v-model="queryParams.status"
-              placeholder="菜单状态"
-              clearable
-              class="status-select"
-              @change="handleQuery"
-            >
-              <el-option label="正常" value="0" />
-              <el-option label="停用" value="1" />
-            </el-select>
-            <el-button type="primary" plain class="btn-search" @click="handleQuery">查询</el-button>
-            <el-button class="btn-reset" :icon="Refresh" @click="resetQuery">重置</el-button>
-          </div>
-
-          <div class="divider-line"></div>
-
-          <el-tooltip content="刷新表格" placement="top">
-            <el-button :icon="RefreshRight" circle class="btn-refresh" @click="getList" />
+        <div class="action-right">
+          <el-tooltip content="隐藏/显示搜索" placement="top">
+            <el-button circle :icon="Search" class="tool-btn" />
+          </el-tooltip>
+          <el-tooltip content="刷新" placement="top">
+            <el-button circle :icon="RefreshRight" class="tool-btn" @click="getList" />
           </el-tooltip>
         </div>
       </div>
@@ -65,108 +58,47 @@
           :default-expand-all="isExpandAll"
           :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
           class="nebula-modern-table"
+          border
         >
-          <!-- 菜单名称列 -->
           <el-table-column prop="menuName" label="菜单名称" min-width="210" :show-overflow-tooltip="true">
             <template #default="scope">
-              <div class="menu-name-cell">
-                <div class="icon-avatar" :class="`type-${scope.row.menuType?.toLowerCase()}`">
-                  <el-icon v-if="scope.row.icon">
-                    <component :is="getIconComponent(scope.row.icon)" />
-                  </el-icon>
-                  <el-icon v-else><Menu /></el-icon>
-                </div>
-                <span class="menu-name-text">{{ scope.row.menuName }}</span>
-              </div>
+              <span class="menu-name-text">{{ scope.row.menuName }}</span>
             </template>
           </el-table-column>
 
-          <!-- 菜单类型列 -->
-          <el-table-column prop="menuType" label="类型" align="center" width="110">
-            <template #default="scope">
-              <span v-if="scope.row.menuType === 'M'" class="type-badge badge-dir">
-                <el-icon><Folder /></el-icon> 目录
-              </span>
-              <span v-else-if="scope.row.menuType === 'C'" class="type-badge badge-menu">
-                <el-icon><Document /></el-icon> 菜单
-              </span>
-              <span v-else-if="scope.row.menuType === 'F'" class="type-badge badge-btn">
-                <el-icon><Operation /></el-icon> 按钮
-              </span>
-            </template>
-          </el-table-column>
-
-          <!-- 图标列 -->
           <el-table-column prop="icon" label="图标" align="center" width="80">
             <template #default="scope">
-              <div v-if="scope.row.icon && scope.row.icon !== '#'" class="simple-icon-preview">
+              <div v-if="scope.row.icon && scope.row.icon !== '#'" class="simple-icon">
                 <el-icon><component :is="getIconComponent(scope.row.icon)" /></el-icon>
               </div>
-              <span v-else class="text-placeholder">-</span>
             </template>
           </el-table-column>
 
-          <!-- 排序号 -->
-          <el-table-column prop="orderNum" label="排序" align="center" width="80">
-            <template #default="scope">
-              <span class="order-badge">{{ scope.row.orderNum }}</span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="orderNum" label="排序" align="center" width="80" />
 
-          <!-- 路由地址 -->
-          <el-table-column prop="path" label="路由地址" min-width="140" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <code class="code-text" v-if="scope.row.path">{{ scope.row.path }}</code>
-              <span v-else class="text-placeholder">-</span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="perms" label="权限标识" min-width="160" :show-overflow-tooltip="true" />
 
-          <!-- 组件路径 -->
-          <el-table-column prop="component" label="组件路径" min-width="170" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <code class="code-text component-code" v-if="scope.row.component">{{ scope.row.component }}</code>
-              <span v-else class="text-placeholder">-</span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="component" label="组件路径" min-width="170" :show-overflow-tooltip="true" />
 
-          <!-- 权限标识 -->
-          <el-table-column prop="perms" label="权限标识" min-width="160" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <span class="perm-pill" v-if="scope.row.perms">{{ scope.row.perms }}</span>
-              <span v-else class="text-placeholder">-</span>
-            </template>
-          </el-table-column>
-
-          <!-- 状态列（参考图中经典绿点/红点带底色 Pill 样式） -->
           <el-table-column prop="status" label="状态" align="center" width="100">
             <template #default="scope">
-              <div v-if="scope.row.status === '0'" class="status-pill status-active">
-                <span class="dot"></span>
-                <span class="label">正常</span>
-              </div>
-              <div v-else class="status-pill status-disabled">
-                <span class="dot"></span>
-                <span class="label">停用</span>
-              </div>
+              <span v-if="scope.row.status === '0'" class="status-plain active-status">正常</span>
+              <span v-else class="status-plain disabled-status">停用</span>
             </template>
           </el-table-column>
 
-          <!-- 操作栏 -->
+          <el-table-column prop="createTime" label="创建时间" align="center" width="160">
+            <template #default="scope">
+              <span>{{ scope.row.createTime || '-' }}</span>
+            </template>
+          </el-table-column>
+
           <el-table-column label="操作" align="center" width="200" fixed="right">
             <template #default="scope">
-              <div class="action-buttons">
-                <el-tooltip content="修改" placement="top">
-                  <el-button link type="primary" :icon="Edit" class="action-btn-icon edit-btn" @click="handleEdit(scope.row)"></el-button>
-                </el-tooltip>
-                <el-tooltip content="新增子菜单" placement="top">
-                  <el-button link type="success" :icon="Plus" class="action-btn-icon add-btn" @click="handleAdd(scope.row.menuId)"></el-button>
-                </el-tooltip>
-                <el-tooltip content="删除" placement="top">
-                  <el-button link type="danger" :icon="Delete" class="action-btn-icon del-btn" @click="handleDelete(scope.row)"></el-button>
-                </el-tooltip>
-                <el-tooltip content="更多" placement="top">
-                  <el-button link type="info" :icon="More" class="action-btn-icon more-btn"></el-button>
-                </el-tooltip>
+              <div class="action-links">
+                <el-button link type="primary" class="action-link" @click="handleEdit(scope.row)">编辑</el-button>
+                <el-button link type="primary" class="action-link" @click="handleAdd(scope.row.menuId)">新增</el-button>
+                <el-button link type="danger" class="action-link action-link-danger" @click="handleDelete(scope.row)">删除</el-button>
               </div>
             </template>
           </el-table-column>
@@ -590,143 +522,78 @@ onMounted(() => {
 .menu-management-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   width: 100%;
-}
-
-.page-header {
-  padding: 4px 4px 12px 4px;
-}
-
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 4px 0;
-  letter-spacing: -0.2px;
-}
-
-.page-desc {
-  font-size: 13px;
-  color: #64748b;
-  margin: 0;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: #f0f2f5;
 }
 
 /* 主面板容器 */
 .main-card {
+  flex: 1;
   background-color: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.02);
-}
-
-/* 工具栏 */
-.toolbar-wrapper {
+  border-radius: 4px;
+  padding: 16px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  flex-direction: column;
 }
 
-.toolbar-left {
-  display: flex;
-  gap: 12px;
+/* 搜索栏 */
+.search-bar {
+  margin-bottom: 0;
 }
 
-.btn-create {
-  border-radius: 8px;
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  border: none;
-  font-weight: 500;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+:deep(.search-bar .el-form-item) {
+  margin-bottom: 16px;
+  margin-right: 16px;
 }
 
-.btn-secondary {
-  border-radius: 8px;
-  border-color: #e2e8f0;
-  color: #475569;
-}
-
-.btn-create:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
-}
-
-.btn-secondary {
-  border-radius: 8px;
-  border-color: #cbd5e1;
-  color: #475569;
-  font-weight: 500;
-}
-
-.btn-secondary:hover {
-  background-color: #f8fafc;
-  color: #1e293b;
-  border-color: #94a3b8;
-}
-
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.search-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+:deep(.search-bar .el-form-item__label) {
+  font-weight: 400;
+  color: #606266;
 }
 
 .search-input {
   width: 200px;
 }
-
 :deep(.search-input .el-input__wrapper) {
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .status-select {
   width: 120px;
 }
-
 :deep(.status-select .el-input__wrapper) {
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
-.btn-search {
-  border-radius: 8px;
-  font-weight: 500;
+/* 操作栏 */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.btn-reset {
-  border-radius: 8px;
-  color: #64748b;
+.action-left .el-button {
+  border-radius: 4px;
 }
 
-.divider-line {
-  width: 1px;
-  height: 24px;
-  background-color: #e2e8f0;
+.tool-btn {
+  border-color: #dcdfe6;
+  color: #606266;
+  padding: 8px;
 }
-
-.btn-refresh {
-  border-color: #e2e8f0;
-  color: #64748b;
-}
-
-.btn-refresh:hover {
-  color: #2563eb;
-  border-color: #bfdbfe;
-  background-color: #eff6ff;
+.tool-btn:hover {
+  color: #409eff;
+  border-color: #c6e2ff;
+  background-color: #ecf5ff;
 }
 
 /* 表格容器与基础控制 */
 .table-wrapper {
-  border-radius: 8px;
-  overflow: hidden;
-  /* 去除外边框以更贴合原图现代感 */
+  flex: 1;
 }
 
 .nebula-modern-table {
@@ -734,221 +601,73 @@ onMounted(() => {
 }
 
 :deep(.nebula-modern-table .el-table__header-wrapper th) {
-  background-color: #ffffff !important;
-  color: #64748b !important;
+  background-color: #f8f8f9 !important;
+  color: #515a6e !important;
   font-weight: 500 !important;
   font-size: 14px !important;
-  height: 50px !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-}
-
-:deep(.nebula-modern-table .el-table__row) {
-  transition: background-color 0.15s ease;
-}
-
-:deep(.nebula-modern-table .el-table__row:hover > td) {
-  background-color: #f8fafc !important;
+  height: 44px !important;
+  padding: 8px 0;
 }
 
 :deep(.nebula-modern-table td.el-table__cell) {
-  padding: 14px 0 !important;
-  border-bottom: 1px solid #f8fafc !important;
+  padding: 8px 0 !important;
   font-size: 14px;
+  color: #606266;
 }
 
-/* 单元格特别样式 */
-.menu-name-cell {
+/* 单元格样式 */
+.menu-name-text {
+  color: #303133;
+}
+
+.simple-icon {
   display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.icon-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
+  color: #409eff;
 }
 
-.menu-name-cell:hover .icon-avatar {
-  transform: scale(1.1);
-}
-
-.type-m {
-  background-color: #f3e8ff;
-  color: #7c3aed;
-  border: 1px solid #ddd6fe;
-}
-
-.type-c {
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
-}
-
-.type-f {
-  background-color: #f1f5f9;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-}
-
-.menu-name-text {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 14px;
-}
-
-/* 菜单类型 Badge */
-.type-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 6px;
+.status-plain {
   font-size: 12px;
-  font-weight: 600;
-}
-
-.badge-dir {
-  background-color: #f3e8ff;
-  color: #7c3aed;
-  border: 1px solid #ddd6fe;
-}
-
-.badge-menu {
-  background-color: #f0f9ff;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
-}
-
-.badge-btn {
-  background-color: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.simple-icon-preview {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #334155;
-}
-
-.order-badge {
-  display: inline-block;
-  padding: 1px 8px;
-  background-color: #f1f5f9;
-  color: #475569;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.code-text {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12.5px;
-  color: #2563eb;
-  background-color: #eff6ff;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 2px;
+  display: inline-block;
+  line-height: 1.2;
 }
 
-.component-code {
-  color: #475569;
-  background-color: #f1f5f9;
+.active-status {
+  color: #409eff;
+  border: 1px solid #d9ecff;
+  background-color: #ecf5ff;
 }
 
-.perm-pill {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  color: #047857;
-  background-color: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  padding: 2px 8px;
-  border-radius: 6px;
+.disabled-status {
+  color: #f56c6c;
+  border: 1px solid #fde2e2;
+  background-color: #fef0f0;
 }
 
-.text-placeholder {
-  color: #cbd5e1;
-}
-
-/* 状态 Pill (绿点/红点) 参考图片中标准样式 */
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-active {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-
-.status-active .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #22c55e;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
-}
-
-.status-disabled {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.status-disabled .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #ef4444;
-}
-
-/* 操作列按钮组 */
-.action-buttons {
+/* 操作列链接 */
+.action-links {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px; /* 加大图标间距 */
+  gap: 12px;
 }
 
-.action-btn-icon {
-  font-size: 16px !important;
-  padding: 4px !important;
+.action-link {
+  font-size: 13px;
+  padding: 0;
+  height: auto;
   margin: 0 !important;
-  transition: transform 0.2s;
 }
 
-.action-btn-icon:hover {
-  transform: scale(1.15);
+.action-link-danger {
+  color: #f56c6c;
 }
-
-.edit-btn {
-  color: #3b82f6 !important;
-}
-
-.add-btn {
-  color: #10b981 !important;
-}
-
-.del-btn {
-  color: #ef4444 !important;
-}
-
-.more-btn {
-  color: #64748b !important;
+.action-link-danger:hover {
+  color: #f78989;
 }
 
 /* 表格底部 footer */
@@ -956,47 +675,37 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.footer-info {
   font-size: 14px;
-  color: #64748b;
-}
-
-:deep(.custom-pagination .el-pager li.is-active) {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-  color: white !important;
-  border: none;
-}
-
-:deep(.custom-pagination .el-pager li) {
-  border-radius: 6px;
-  font-weight: 500;
+  color: #606266;
 }
 
 /* 弹窗样式 */
 :deep(.custom-dialog) {
-  border-radius: 16px !important;
-  overflow: hidden;
+  border-radius: 4px !important;
+}
+
+:deep(.custom-dialog .el-dialog__header) {
+  margin: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .dialog-header-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f172a;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
 }
 
 .header-icon-box {
-  width: 32px;
-  height: 32px;
-  background-color: #eff6ff;
-  color: #2563eb;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  display: none;
 }
 
 .type-radio-group {
@@ -1013,17 +722,12 @@ onMounted(() => {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #ebeef5;
 }
 
-.btn-cancel {
-  border-radius: 8px;
-}
-
-.btn-submit {
-  border-radius: 8px;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border: none;
-  font-weight: 600;
+.btn-cancel, .btn-submit {
+  border-radius: 4px;
 }
 </style>

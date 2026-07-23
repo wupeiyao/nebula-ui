@@ -151,15 +151,14 @@ const handleNavigate = (path) => {
 
 <style scoped>
 .menu-icon {
-  margin-right: 12px;
-  font-size: 20px;
+  margin-right: 6px;
+  font-size: 22px;
   transition: transform 0.25s ease, color 0.25s ease;
   vertical-align: middle;
+  color: #3b82f6; /* Default icon color to match image (blueish) */
 }
 
 .menu-title-text {
-  font-size: 15px;
-  font-weight: 500;
   letter-spacing: 0.3px;
   vertical-align: middle;
 }

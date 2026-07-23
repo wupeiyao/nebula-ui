@@ -1,166 +1,120 @@
 <template>
   <div class="dept-page">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <div>
-        <h2>部门管理</h2>
-        <p>维护企业组织架构、部门信息以及上下级关系</p>
-      </div>
-      <div class="header-actions">
-        <el-button type="primary" @click="handleAdd()">
-          <el-icon><Plus /></el-icon>
-          新建部门
-        </el-button>
-        <el-button @click="toggleExpandAll">
-          <el-icon>
-            <component :is="isExpandAll ? ArrowDown : ArrowRight"/>
-          </el-icon>
-          {{isExpandAll ? '全部收起':'全部展开'}}
-        </el-button>
-      </div>
-    </div>
     <!-- 主区域 -->
-    <div class="dept-content">
-      <!-- 左侧组织树 -->
-      <div class="tree-panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <el-icon>
-              <OfficeBuilding/>
-            </el-icon>
-            <span>
-              组织架构
-            </span>
-          </div>
+    <div class="dept-layout">
+      <!-- 左侧：部门架构树 -->
+      <div class="dept-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">组织列表</div>
+        </div>
+        <div class="sidebar-search">
           <el-input
-              v-model="queryParams.deptName"
-              placeholder="搜索部门"
-              clearable
-              size="small"
-              @input="handleQuery"
+            v-model="queryParams.deptName"
+            placeholder="请输入内容"
+            clearable
+            @input="handleQuery"
           >
-            <template #prefix>
-              <el-icon>
-                <Search/>
-              </el-icon>
+            <template #suffix>
+              <el-icon><Search/></el-icon>
             </template>
           </el-input>
         </div>
-        <!-- 真正树结构 -->
-        <div class="organization-tree">
+        <div class="sidebar-tree">
           <el-tree
               ref="treeRef"
               :data="deptTree"
               node-key="deptId"
-              :props="{
-              label:'deptName',
-              children:'children'
-            }"
+              :props="{ label:'deptName', children:'children' }"
               :default-expand-all="isExpandAll"
               highlight-current
               :expand-on-click-node="false"
               @node-click="handleNodeClick"
           >
             <template #default="{node,data}">
-              <div
-                  class="tree-node"
-                  :class="{
-                  active:selectedDept?.deptId===data.deptId
-                }"
-              >
-                <div class="node-left">
-                  <div class="dept-icon">
-                    <el-icon v-if="data.children && data.children.length">
-                      <FolderOpened/>
-                    </el-icon>
-                    <el-icon v-else>
-                      <Document/>
-                    </el-icon>
-                  </div>
-                  <span class="dept-name">
-                    {{data.deptName}}
-                  </span>
-                </div>
-                <div class="node-right">
-                  <el-tag
-                      size="small"
-                      :type="data.status==='0'?'success':'danger'"
-                  >
-                    {{
-                      data.status==='0'
-                          ?
-                          '正常'
-                          :
-                          '停用'
-                    }}
-                  </el-tag>
-                </div>
+              <div class="tree-node" :class="{ active:selectedDept?.deptId===data.deptId }">
+                <span class="dept-name">{{data.deptName}}</span>
               </div>
             </template>
           </el-tree>
         </div>
       </div>
-      <!-- 右侧子部门列表 -->
-      <div class="detail-panel">
-        <div class="list-toolbar" style="display: flex; margin-bottom: 16px; align-items: center;">
-          <el-button
-              type="success"
-              @click="handleAdd(selectedDept)"
-              :disabled="!selectedDept"
-          >
-            <el-icon><Plus /></el-icon>
-            新增下级
-          </el-button>
-          
-          <div style="flex:1"></div>
-          
-          <el-input
-              v-model="pageParams.deptName"
-              placeholder="搜索子部门"
-              clearable
-              size="small"
-              style="width: 200px"
-              @keyup.enter="handlePageQuery"
-              @clear="handlePageQuery"
-          >
-            <template #prefix>
-              <el-icon><Search/></el-icon>
-            </template>
-          </el-input>
-          <el-button type="primary" size="small" style="margin-left: 10px" @click="handlePageQuery">搜索</el-button>
+
+      <!-- 右侧：详情面板 -->
+      <div class="dept-main">
+        <div class="main-header">
+<!--          <div class="selected-dept-name">{{ selectedDept?.deptName || '顶级部门' }}</div>-->
+          <div class="tabs-header">
+            <span class="tab-item active">下级部门列表</span>
+          </div>
         </div>
+        
+        <div class="main-content">
+          <!-- 工具栏 -->
+          <div class="toolbar">
+            <el-form :inline="true" class="search-form" @submit.prevent>
+              <el-form-item>
+                <el-input
+                  v-model="pageParams.deptName"
+                  placeholder="查询关键字"
+                  clearable
+                  @keyup.enter="handlePageQuery"
+                  @clear="handlePageQuery"
+                >
+                  <template #suffix><el-icon><Search/></el-icon></template>
+                </el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="handlePageQuery">查询</el-button>
+                <el-button @click="pageParams.deptName=''; handlePageQuery()">重置</el-button>
+                <el-button type="primary" @click="handleAdd(selectedDept)">新增下级</el-button>
+              </el-form-item>
+            </el-form>
+          </div>
 
-        <el-table :data="subDeptList" v-loading="tableLoading" style="width: 100%;" class="sub-dept-table" row-key="deptId">
-          <el-table-column prop="deptName" label="部门名称" min-width="150" show-overflow-tooltip />
-          <el-table-column prop="leader" label="负责人" width="120" show-overflow-tooltip />
-          <el-table-column prop="phone" label="联系电话" width="140" />
-          <el-table-column prop="orderNum" label="排序" width="80" align="center" />
-          <el-table-column prop="status" label="状态" width="100" align="center">
-            <template #default="{row}">
-              <el-tag :type="row.status === '0' ? 'success' : 'danger'">
-                {{ row.status === '0' ? '正常' : '停用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="180" fixed="right" align="center">
-            <template #default="{row}">
-              <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-              <el-button type="primary" link @click="handleAdd(row)">新增</el-button>
-              <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+          <!-- 表格 -->
+          <el-table 
+            :data="subDeptList" 
+            v-loading="tableLoading" 
+            style="width: 100%;" 
+            class="nebula-modern-table"
+            row-key="deptId"
+            border
+          >
+            <el-table-column type="selection" width="50" align="center" />
+            <el-table-column type="index" label="序号" width="60" align="center" />
+            <el-table-column prop="deptName" label="部门名称" min-width="150" show-overflow-tooltip />
+            <el-table-column prop="leader" label="负责人" width="120" show-overflow-tooltip />
+            <el-table-column prop="phone" label="联系电话" width="140" align="center" />
+            <el-table-column prop="orderNum" label="排序" width="80" align="center" />
+            <el-table-column prop="status" label="状态" width="100" align="center">
+              <template #default="{row}">
+                <span v-if="row.status === '0'" class="status-plain active-status">正常</span>
+                <span v-else class="status-plain disabled-status">停用</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="180" align="center" fixed="right">
+              <template #default="{row}">
+                <div class="action-links">
+                  <el-button type="primary" link class="action-link" @click="handleEdit(row)">编辑</el-button>
+                  <el-button type="primary" link class="action-link" @click="handleAdd(row)">新增</el-button>
+                  <el-button type="danger" link class="action-link action-link-danger" @click="handleDelete(row)">删除</el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
 
-        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-          <el-pagination
-              v-model:current-page="pageParams.pageIndex"
-              v-model:page-size="pageParams.pageSize"
-              :page-sizes="[10, 20, 30, 50]"
-              layout="total, sizes, prev, pager, next, jumper"
-              :total="totalCount"
-              @size-change="handlePageQuery"
-              @current-change="handlePageQuery"
-          />
+          <!-- 分页 -->
+          <div class="pagination-container">
+            <el-pagination
+                v-model:current-page="pageParams.pageIndex"
+                v-model:page-size="pageParams.pageSize"
+                :page-sizes="[10, 20, 30, 50]"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="totalCount"
+                @size-change="handlePageQuery"
+                @current-change="handlePageQuery"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -293,7 +247,7 @@ const pageParams = reactive({
   pageIndex: 1,
   pageSize: 10,
   deptName: '',
-  parentId: ''
+  treeDeptId: ''
 })
 /**
  * 查询
@@ -411,7 +365,7 @@ const getList = async()=>{
 const handleNodeClick=(data)=>{
   selectedDept.value=data
   pageParams.pageIndex = 1
-  pageParams.parentId = data.deptId
+  pageParams.treeDeptId = data.deptId
   handlePageQuery()
 }
 
@@ -584,266 +538,235 @@ onMounted(()=>{
 })
 </script>
 <style scoped>
-/* =========================
-   页面整体
-========================= */
 .dept-page {
-  width:100%;
-  min-height:100%;
-  background:#f6f8fc;
-  padding:24px;
-  box-sizing:border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: #f0f2f5;
 }
-/* =========================
-   顶部标题
-========================= */
-.page-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
+
+.dept-layout {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
 }
-.page-header h2 {
-  margin:0;
-  font-size:24px;
-  font-weight:700;
-  color:#111827;
+
+/* 左侧 Sidebar */
+.dept-sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
 }
-.page-header p {
-  margin-top:8px;
-  color:#64748b;
-  font-size:14px;
+
+.sidebar-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ebeef5;
 }
-.header-actions {
-  display:flex;
-  gap:12px;
+
+.sidebar-title {
+  color: #409eff;
+  font-size: 14px;
+  font-weight: 500;
 }
-/* =========================
-   主内容布局
-========================= */
-.dept-content {
-  display:flex;
-  gap:20px;
-  height:calc(100vh - 170px);
+
+.sidebar-search {
+  padding: 12px 16px;
 }
-/* =========================
-   左侧树
-========================= */
-.tree-panel {
-  width:380px;
-  background:white;
-  border-radius:16px;
-  box-shadow:
-      0 8px 30px rgba(15,23,42,.06);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
+
+:deep(.sidebar-search .el-input__wrapper) {
+  border-radius: 4px;
 }
-.panel-header {
-  padding:18px;
-  border-bottom:1px solid #eef2f7;
+
+.sidebar-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 16px;
 }
-.panel-title {
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:16px;
-  font-weight:600;
-  margin-bottom:14px;
-  color:#1e293b;
-}
-.organization-tree {
-  flex:1;
-  overflow:auto;
-  padding:16px;
-}
-/* =========================
-   Tree样式覆盖
-========================= */
+
 :deep(.el-tree) {
-  background:transparent;
-  color:#334155;
+  background: transparent;
 }
+
 :deep(.el-tree-node__content) {
-  height:auto;
-  padding:0;
-  margin-bottom:8px;
+  height: 36px;
 }
-:deep(.el-tree-node__expand-icon) {
-  color:#94a3b8;
-  font-size:16px;
-}
+
 .tree-node {
-  width:100%;
-  height:46px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 12px;
-  border-radius:10px;
-  transition:.25s;
-  cursor:pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
-.tree-node:hover {
-  background:#f1f5ff;
-  transform:translateX(3px);
-}
-.tree-node.active {
-  background:
-      linear-gradient(
-          135deg,
-          #eef2ff,
-          #dbeafe
-      );
-}
-.node-left {
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.dept-icon {
-  width:32px;
-  height:32px;
-  border-radius:8px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#eef2ff;
-  color:#6366f1;
-}
+
 .dept-name {
-  font-size:14px;
-  font-weight:500;
-  color:#334155;
+  font-size: 14px;
+  color: #303133;
 }
-.node-right {
-  display:flex;
-  align-items:center;
+
+.tree-node.active .dept-name {
+  color: #409eff;
 }
-/* =========================
-   右侧详情
-========================= */
-.detail-panel {
-  flex:1;
-  background:white;
-  border-radius:16px;
-  box-shadow:
-      0 8px 30px rgba(15,23,42,.06);
-  padding:24px;
-  overflow:auto;
+
+/* 覆盖 el-tree 的高亮背景，截图里似乎没有明显的背景高亮 */
+:deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
+  background-color: transparent !important;
 }
-.detail-card {
-  animation:fade .25s ease;
+
+:deep(.el-tree-node__content:hover) {
+  background-color: #f5f7fa !important;
 }
-@keyframes fade {
-  from {
-    opacity:0;
-    transform:translateY(10px);
-  }
-  to {
-    opacity:1;
-    transform:none;
-  }
+
+/* 右侧 Main Panel */
+.dept-main {
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  min-width: 0;
 }
-.detail-title {
-  display:flex;
-  align-items:center;
-  gap:16px;
-  padding-bottom:22px;
-  border-bottom:1px solid #eef2f7;
+
+.main-header {
+  padding: 16px 20px 0;
+  border-bottom: 1px solid #ebeef5;
 }
-.big-icon {
-  width:56px;
-  height:56px;
-  border-radius:14px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:
-      linear-gradient(
-          135deg,
-          #6366f1,
-          #3b82f6
-      );
-  color:white;
-  font-size:26px;
+
+.selected-dept-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #303133;
+  margin-bottom: 16px;
 }
-.detail-title h3 {
-  margin:0;
-  font-size:22px;
-  color:#111827;
+
+.tabs-header {
+  display: flex;
 }
-.detail-title span {
-  display:block;
-  margin-top:6px;
-  font-size:13px;
-  color:#94a3b8;
+
+.tab-item {
+  padding: 8px 0;
+  font-size: 14px;
+  color: #303133;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-right: 24px;
 }
-/* =========================
-   信息列表
-========================= */
-.info-list {
-  margin-top:24px;
+
+.tab-item.active {
+  color: #409eff;
+  border-bottom-color: #409eff;
 }
-.info-item {
-  display:flex;
-  align-items:center;
-  padding:14px 0;
-  border-bottom:1px dashed #e5e7eb;
+
+.main-content {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }
-.info-item label {
-  width:120px;
-  color:#64748b;
+
+/* Toolbar */
+.toolbar {
+  margin-bottom: 16px;
 }
-.info-item span {
-  color:#1e293b;
-  font-weight:500;
+.search-form {
+  display: flex;
+  align-items: center;
 }
-/* =========================
-   操作按钮
-========================= */
-.detail-actions {
-  margin-top:30px;
-  display:flex;
-  gap:12px;
+:deep(.search-form .el-form-item) {
+  margin-bottom: 0;
+  margin-right: 12px;
 }
-/* =========================
-   空状态
-========================= */
-.empty-detail {
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  color:#94a3b8;
+:deep(.search-form .el-button) {
+  border-radius: 4px;
 }
-.empty-detail .el-icon {
-  font-size:60px;
-  margin-bottom:20px;
+
+/* 表格与操作列 */
+.nebula-modern-table {
+  width: 100%;
 }
-/* =========================
-   Dialog优化
-========================= */
+
+:deep(.nebula-modern-table .el-table__header-wrapper th) {
+  background-color: #f8f8f9 !important;
+  color: #515a6e !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  height: 44px !important;
+  padding: 8px 0;
+}
+
+:deep(.nebula-modern-table td.el-table__cell) {
+  padding: 8px 0 !important;
+  font-size: 14px;
+  color: #606266;
+}
+
+.status-plain {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  display: inline-block;
+  line-height: 1.2;
+}
+.active-status {
+  color: #409eff;
+  border: 1px solid #d9ecff;
+  background-color: #ecf5ff;
+}
+.disabled-status {
+  color: #f56c6c;
+  border: 1px solid #fde2e2;
+  background-color: #fef0f0;
+}
+
+.action-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.action-link {
+  font-size: 13px;
+  padding: 0;
+  height: auto;
+  margin: 0 !important;
+}
+.action-link-danger {
+  color: #f56c6c;
+}
+.action-link-danger:hover {
+  color: #f78989;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Dialog */
 :deep(.el-dialog) {
-  border-radius:16px;
+  border-radius: 4px;
 }
 :deep(.el-dialog__header) {
-  font-size:18px;
-  font-weight:700;
+  padding: 16px 20px;
+  margin: 0;
+  border-bottom: 1px solid #ebeef5;
 }
-:deep(.el-form-item__label) {
-  color:#475569;
-  font-weight:500;
+:deep(.el-dialog__title) {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
 }
-/* =========================
-   滚动条
-========================= */
-::-webkit-scrollbar {
-  width:6px;
+:deep(.el-dialog__footer) {
+  padding: 16px 20px;
+  border-top: 1px solid #ebeef5;
 }
-::-webkit-scrollbar-thumb {
-  background:#cbd5e1;
-  border-radius:10px;
+.el-button {
+  border-radius: 4px;
 }
 </style>
