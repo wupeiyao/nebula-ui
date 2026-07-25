@@ -112,7 +112,7 @@ router.beforeEach(async (to, from) => {
       return { path: '/login', query: redirectQuery };
     }
 
-    if (!authStore.user) {
+    if (!authStore.user || !authStore.permissions || authStore.permissions.length === 0) {
       try {
         await authStore.fetchUserInfo();
       } catch (error) {

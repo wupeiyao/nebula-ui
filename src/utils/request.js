@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
 import securityConfig from '../config/security';
+import { useAuthStore } from '../store/auth';
 
 // 创建 axios 实例
 const service = axios.create({
@@ -56,9 +57,14 @@ service.interceptors.response.use(
       const data = error.response.data;
       
       if (status === 401) {
-        // 未授权，清除本地 Token 并跳转到登录页面
-        localStorage.removeItem('nebula_token');
-        localStorage.removeItem('nebula_user');
+        // 未授权，清除本地 Token 与 Store 状态，并跳转到登录页面
+        try {
+          const authStore = useAuthStore();
+          authStore.clearAuth();
+        } catch (e) {
+          localStorage.removeItem('nebula_token');
+          localStorage.removeItem('nebula_user');
+        }
         message = '登录已过期或未登录，请重新登录';
         
         // 延迟跳转，防止弹窗还没显示就刷新了页面

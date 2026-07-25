@@ -39,12 +39,12 @@
           <el-button type="primary" @click="toggleExpandAll">展开/折叠</el-button>
         </div>
         <div class="action-right">
-          <el-tooltip content="隐藏/显示搜索" placement="top">
-            <el-button circle class="tool-btn" />
-          </el-tooltip>
-          <el-tooltip content="刷新" placement="top">
-            <el-button circle class="tool-btn" @click="getList" />
-          </el-tooltip>
+<!--          <el-tooltip content="隐藏/显示搜索" placement="top">-->
+<!--            <el-button circle class="tool-btn" />-->
+<!--          </el-tooltip>-->
+<!--          <el-tooltip content="刷新" placement="top">-->
+<!--            <el-button circle class="tool-btn" @click="getList" />-->
+<!--          </el-tooltip>-->
         </div>
       </div>
 
@@ -528,6 +528,7 @@ onMounted(() => {
   padding: 16px;
   box-sizing: border-box;
   background-color: #f0f2f5;
+  font-size: 16px;
 }
 
 /* 主面板容器 */
@@ -554,6 +555,13 @@ onMounted(() => {
 :deep(.search-bar .el-form-item__label) {
   font-weight: 400;
   color: #606266;
+  font-size: 16px;
+}
+
+:deep(.search-bar .el-input__inner),
+:deep(.search-bar .el-select .el-input__inner),
+:deep(.search-bar .el-button) {
+  font-size: 16px;
 }
 
 .search-input {
@@ -564,7 +572,7 @@ onMounted(() => {
 }
 
 .status-select {
-  width: 120px;
+  width: 130px;
 }
 :deep(.status-select .el-input__wrapper) {
   border-radius: 4px;
@@ -580,6 +588,7 @@ onMounted(() => {
 
 .action-left .el-button {
   border-radius: 4px;
+  font-size: 16px;
 }
 
 .tool-btn {
@@ -601,21 +610,26 @@ onMounted(() => {
 
 .nebula-modern-table {
   width: 100%;
+  font-size: 16px;
 }
 
 :deep(.nebula-modern-table .el-table__header-wrapper th) {
   background-color: #f8f8f9 !important;
   color: #515a6e !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
   height: 44px !important;
   padding: 8px 0;
 }
 
 :deep(.nebula-modern-table td.el-table__cell) {
   padding: 8px 0 !important;
-  font-size: 14px;
+  font-size: 16px !important;
   color: #606266;
+}
+
+:deep(.nebula-modern-table .el-button) {
+  font-size: 16px;
 }
 
 /* 单元格样式 */
@@ -627,12 +641,12 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   color: #409eff;
 }
 
 .status-plain {
-  font-size: 12px;
+  font-size: 14px;
   padding: 2px 6px;
   border-radius: 2px;
   display: inline-block;
@@ -660,7 +674,7 @@ onMounted(() => {
 }
 
 .action-link {
-  font-size: 13px;
+  font-size: 16px;
   padding: 0;
   height: auto;
   margin: 0 !important;
@@ -683,13 +697,22 @@ onMounted(() => {
 }
 
 .footer-info {
-  font-size: 14px;
+  font-size: 16px;
   color: #606266;
+}
+
+:deep(.custom-pagination),
+:deep(.custom-pagination button),
+:deep(.custom-pagination span),
+:deep(.custom-pagination li),
+:deep(.custom-pagination input) {
+  font-size: 15px !important;
 }
 
 /* 弹窗样式 */
 :deep(.custom-dialog) {
   border-radius: 4px !important;
+  font-size: 16px;
 }
 
 :deep(.custom-dialog .el-dialog__header) {
@@ -702,13 +725,28 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: #303133;
 }
 
 .header-icon-box {
   display: none;
+}
+
+.dialog-form {
+  padding: 10px 0;
+}
+
+:deep(.dialog-form .el-form-item__label) {
+  font-size: 16px;
+}
+
+:deep(.dialog-form .el-input__inner),
+:deep(.dialog-form .el-radio-button__inner),
+:deep(.dialog-form .el-radio__label),
+:deep(.dialog-form .el-tree-select) {
+  font-size: 16px;
 }
 
 .type-radio-group {
@@ -720,6 +758,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
+  font-size: 16px;
 }
 
 .dialog-footer {
@@ -728,6 +767,10 @@ onMounted(() => {
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid #ebeef5;
+}
+
+:deep(.dialog-footer .el-button) {
+  font-size: 16px;
 }
 
 .btn-cancel, .btn-submit {

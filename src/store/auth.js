@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { login as loginApi, getUserInfo as getUserInfoApi } from '../api/auth/auth.js';
 import { getUserMenuTree } from '../api/system/menu.js';
+import { useTagsViewStore } from './tagsView.js';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -24,6 +25,10 @@ export const useAuthStore = defineStore('auth', {
      */
     async login(loginForm) {
       try {
+        // 登录前先重置上个账号保留的页签视图缓存
+        const tagsViewStore = useTagsViewStore();
+        tagsViewStore.delAllViews();
+
         const response = await loginApi(loginForm);
         // AuthorizationResponse 包括 token, accessToken, user, expiresIn
         const { token, accessToken, user } = response.result || {};
@@ -40,11 +45,12 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('nebula_user', JSON.stringify(user));
         }
 
-        // 登录成功后同步获取用户最新角色和权限信息 (进行容错捕获，防止异常阻断登录成功流程)
+        // 登录成功后同步获取用户最新角色、权限信息及菜单树
         try {
           await this.fetchUserInfo();
+          await this.fetchUserMenus();
         } catch (userInfoError) {
-          console.warn('同步获取用户信息失败，使用登录接口返回的基础信息:', userInfoError);
+          console.warn('同步获取用户信息及菜单失败，使用登录接口返回的基础信息:', userInfoError);
         }
 
         return response;
@@ -110,6 +116,10 @@ export const useAuthStore = defineStore('auth', {
       this.routesLoaded = false;
       localStorage.removeItem('nebula_token');
       localStorage.removeItem('nebula_user');
+
+      // 清空 TagsView 页签状态，防止换账号登录时保留上一账号的页签
+      const tagsViewStore = useTagsViewStore();
+      tagsViewStore.delAllViews();
     }
   }
 });

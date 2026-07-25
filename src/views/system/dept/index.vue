@@ -547,6 +547,7 @@ onMounted(()=>{
   padding: 16px;
   box-sizing: border-box;
   background-color: #f0f2f5;
+  font-size: 16px;
 }
 
 .dept-layout {
@@ -573,7 +574,7 @@ onMounted(()=>{
 
 .sidebar-title {
   color: #409eff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -585,18 +586,25 @@ onMounted(()=>{
   border-radius: 4px;
 }
 
+:deep(.sidebar-search .el-input__inner) {
+  font-size: 16px;
+}
+
 .sidebar-tree {
   flex: 1;
   overflow-y: auto;
   padding: 0 8px 16px;
+  font-size: 16px;
 }
 
 :deep(.el-tree) {
   background: transparent;
+  font-size: 16px;
 }
 
 :deep(.el-tree-node__content) {
   height: 36px;
+  font-size: 16px;
 }
 
 .tree-node {
@@ -606,7 +614,7 @@ onMounted(()=>{
 }
 
 .dept-name {
-  font-size: 14px;
+  font-size: 16px;
   color: #303133;
 }
 
@@ -614,7 +622,7 @@ onMounted(()=>{
   color: #409eff;
 }
 
-/* 覆盖 el-tree 的高亮背景，截图里似乎没有明显的背景高亮 */
+/* 覆盖 el-tree 的高亮背景 */
 :deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
   background-color: transparent !important;
 }
@@ -640,7 +648,7 @@ onMounted(()=>{
 }
 
 .selected-dept-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   color: #303133;
   margin-bottom: 16px;
@@ -652,7 +660,7 @@ onMounted(()=>{
 
 .tab-item {
   padding: 8px 0;
-  font-size: 14px;
+  font-size: 16px;
   color: #303133;
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -684,32 +692,39 @@ onMounted(()=>{
   margin-bottom: 0;
   margin-right: 12px;
 }
+:deep(.search-form .el-input__inner),
 :deep(.search-form .el-button) {
+  font-size: 16px;
   border-radius: 4px;
 }
 
 /* 表格与操作列 */
 .nebula-modern-table {
   width: 100%;
+  font-size: 16px;
 }
 
 :deep(.nebula-modern-table .el-table__header-wrapper th) {
   background-color: #f8f8f9 !important;
   color: #515a6e !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
   height: 44px !important;
   padding: 8px 0;
 }
 
 :deep(.nebula-modern-table td.el-table__cell) {
   padding: 8px 0 !important;
-  font-size: 14px;
+  font-size: 16px !important;
   color: #606266;
 }
 
+:deep(.nebula-modern-table .el-button) {
+  font-size: 16px;
+}
+
 .status-plain {
-  font-size: 12px;
+  font-size: 14px;
   padding: 2px 6px;
   border-radius: 2px;
   display: inline-block;
@@ -733,7 +748,7 @@ onMounted(()=>{
   gap: 12px;
 }
 .action-link {
-  font-size: 13px;
+  font-size: 16px;
   padding: 0;
   height: auto;
   margin: 0 !important;
@@ -751,9 +766,18 @@ onMounted(()=>{
   margin-top: 16px;
 }
 
+:deep(.pagination-container),
+:deep(.pagination-container button),
+:deep(.pagination-container span),
+:deep(.pagination-container li),
+:deep(.pagination-container input) {
+  font-size: 15px !important;
+}
+
 /* Dialog */
 :deep(.el-dialog) {
   border-radius: 4px;
+  font-size: 16px;
 }
 :deep(.el-dialog__header) {
   padding: 16px 20px;
@@ -761,7 +785,7 @@ onMounted(()=>{
   border-bottom: 1px solid #ebeef5;
 }
 :deep(.el-dialog__title) {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: #303133;
 }
@@ -769,7 +793,21 @@ onMounted(()=>{
   padding: 16px 20px;
   border-top: 1px solid #ebeef5;
 }
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+  font-size: 16px;
+}
+:deep(.el-dialog .el-input__inner),
+:deep(.el-dialog .el-radio__label),
+:deep(.el-dialog .el-tree-select) {
+  font-size: 16px;
+}
+:deep(.el-dialog .el-button) {
+  font-size: 16px;
+}
 .el-button {
   border-radius: 4px;
+  font-size: 16px;
 }
 </style>

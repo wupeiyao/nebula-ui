@@ -76,6 +76,40 @@ export function changeRoleStatus(roleId, status) {
 }
 
 /**
+ * 修改角色数据权限
+ * @param {Object} data 角色及数据权限信息
+ */
+export function dataScopeRole(data) {
+  return request({
+    url: '/system/role/dataScope',
+    method: 'put',
+    data: data
+  });
+}
+
+/**
+ * 根据角色ID查询菜单树勾选列表
+ * @param {String} roleId 角色ID
+ */
+export function getRoleMenuTreeselect(roleId) {
+  return request({
+    url: '/system/role/roleMenuTreeselect/' + roleId,
+    method: 'get'
+  });
+}
+
+/**
+ * 根据角色ID查询部门树勾选列表
+ * @param {String} roleId 角色ID
+ */
+export function getRoleDeptTreeselect(roleId) {
+  return request({
+    url: '/system/role/roleDeptTreeselect/' + roleId,
+    method: 'get'
+  });
+}
+
+/**
  * 删除角色
  * @param {String} roleId 角色ID
  */

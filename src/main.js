@@ -7,6 +7,7 @@ import 'element-plus/dist/index.css';
 import './style.css';
 import App from './App.vue';
 import router from './router';
+import { hasPermi, checkPermi } from './directive/permission/hasPermi.js';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -14,5 +15,9 @@ const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 app.use(ElementPlus);
+
+// 注册全局按钮权限指令与全局方法
+app.directive('hasPermi', hasPermi);
+app.config.globalProperties.$checkPermi = checkPermi;
 
 app.mount('#app');

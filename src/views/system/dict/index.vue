@@ -9,7 +9,7 @@
               <el-icon><Notebook /></el-icon>
               数据字典类型
             </span>
-            <el-button type="primary" size="small" @click="handleAddType">
+            <el-button type="primary" @click="handleAddType">
               新增字典
             </el-button>
           </div>
@@ -37,8 +37,8 @@
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" size="small" @click="handleTypeQuery">查询</el-button>
-              <el-button size="small" @click="resetTypeQuery">重置</el-button>
+              <el-button type="primary" @click="handleTypeQuery">查询</el-button>
+              <el-button @click="resetTypeQuery">重置</el-button>
             </el-form-item>
           </el-form>
 
@@ -64,10 +64,10 @@
                   <span>{{ scope.row.status === '0' ? '正常' : '停用' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" align="center" width="100" fixed="right">
+              <el-table-column label="操作" align="center" width="120" fixed="right">
                 <template #default="scope">
-                  <el-button link type="primary" size="small" @click.stop="handleUpdateType(scope.row)">修改</el-button>
-                  <el-button link type="danger" size="small" @click.stop="handleDeleteType(scope.row)">删除</el-button>
+                  <el-button link type="primary" @click.stop="handleUpdateType(scope.row)">修改</el-button>
+                  <el-button link type="danger" @click.stop="handleDeleteType(scope.row)">删除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -105,15 +105,14 @@
             <div class="card-actions">
               <el-button
                 type="primary"
-                size="small"
                 :disabled="!selectedType.dictType"
                 @click="handleAddData"
               >
                 新增字典值
               </el-button>
-              <el-tooltip content="刷新" placement="top">
-                <el-button circle size="small" class="tool-btn" @click="getDataList" />
-              </el-tooltip>
+<!--              <el-tooltip content="刷新" placement="top">-->
+<!--                <el-button circle class="tool-btn" @click="getDataList" />-->
+<!--              </el-tooltip>-->
             </div>
           </div>
 
@@ -143,8 +142,8 @@
                 </el-select>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary"  size="small" @click="handleDataQuery">查询</el-button>
-                <el-button  size="small" @click="resetDataQuery">重置</el-button>
+                <el-button type="primary" @click="handleDataQuery">查询</el-button>
+                <el-button @click="resetDataQuery">重置</el-button>
               </el-form-item>
             </el-form>
 
@@ -178,10 +177,10 @@
                   </template>
                 </el-table-column>
                 <el-table-column label="备注" prop="remark" :show-overflow-tooltip="true" />
-                <el-table-column label="操作" align="center" width="110" fixed="right">
+                <el-table-column label="操作" align="center" width="120" fixed="right">
                   <template #default="scope">
-                    <el-button link type="primary" size="small" @click="handleUpdateData(scope.row)">修改</el-button>
-                    <el-button link type="danger" size="small" @click="handleDeleteData(scope.row)">删除</el-button>
+                    <el-button link type="primary" @click="handleUpdateData(scope.row)">修改</el-button>
+                    <el-button link type="danger" @click="handleDeleteData(scope.row)">删除</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -612,6 +611,11 @@ onMounted(() => {
   padding: 16px;
   box-sizing: border-box;
   background-color: #f0f2f5;
+  font-size: 16px;
+}
+
+:deep(.el-button) {
+  font-size: 16px !important;
 }
 
 .full-height-row {
@@ -642,7 +646,7 @@ onMounted(() => {
 }
 
 .card-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
   color: #303133;
   display: flex;
@@ -653,6 +657,7 @@ onMounted(() => {
 .selected-tag {
   margin-left: 8px;
   font-weight: normal;
+  font-size: 14px;
 }
 
 .card-actions {
@@ -672,21 +677,26 @@ onMounted(() => {
 }
 
 :deep(.mini-search .el-form-item__label) {
-  font-size: 13px;
+  font-size: 16px;
   color: #606266;
 }
 
+:deep(.mini-search .el-input__inner),
+:deep(.mini-search .el-button) {
+  font-size: 16px;
+}
+
 .search-input-small {
-  width: 130px;
+  width: 150px;
 }
 
 .status-select-small {
-  width: 100px;
+  width: 120px;
 }
 
 .dict-type-code {
   font-family: Consolas, Monaco, monospace;
-  font-size: 12px;
+  font-size: 15px;
   color: #409eff;
 }
 
@@ -699,21 +709,26 @@ onMounted(() => {
 
 .nebula-modern-table {
   width: 100%;
+  font-size: 16px;
 }
 
 :deep(.nebula-modern-table .el-table__header-wrapper th) {
   background-color: #f8f8f9 !important;
   color: #515a6e !important;
   font-weight: 500 !important;
-  font-size: 13px !important;
-  height: 40px !important;
+  font-size: 16px !important;
+  height: 44px !important;
   padding: 4px 0;
 }
 
 :deep(.nebula-modern-table td.el-table__cell) {
   padding: 6px 0 !important;
-  font-size: 13px;
+  font-size: 16px !important;
   color: #606266;
+}
+
+:deep(.nebula-modern-table .el-button) {
+  font-size: 16px;
 }
 
 :deep(.nebula-modern-table .current-row > td.el-table__cell) {
@@ -722,7 +737,7 @@ onMounted(() => {
 
 /* 状态样式 */
 .status-plain {
-  font-size: 12px;
+  font-size: 14px;
   padding: 2px 6px;
   border-radius: 2px;
   display: inline-block;
@@ -752,8 +767,15 @@ onMounted(() => {
 }
 
 .footer-info {
-  font-size: 12px;
+  font-size: 14px;
   color: #909399;
+}
+
+:deep(.custom-pagination),
+:deep(.custom-pagination button),
+:deep(.custom-pagination span),
+:deep(.custom-pagination li) {
+  font-size: 15px !important;
 }
 
 .empty-holder {
@@ -766,6 +788,11 @@ onMounted(() => {
 /* 弹窗样式 */
 :deep(.custom-dialog) {
   border-radius: 4px !important;
+  font-size: 16px;
+}
+
+:deep(.custom-dialog .el-dialog__title) {
+  font-size: 18px;
 }
 
 :deep(.custom-dialog .el-dialog__header) {
@@ -778,12 +805,27 @@ onMounted(() => {
   padding: 10px 0 0 0;
 }
 
+:deep(.dialog-form .el-form-item__label) {
+  font-size: 16px;
+}
+
+:deep(.dialog-form .el-input__inner),
+:deep(.dialog-form .el-textarea__inner),
+:deep(.dialog-form .el-radio__label),
+:deep(.dialog-form .el-select-dropdown__item) {
+  font-size: 16px;
+}
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 20px;
   border-top: 1px solid #ebeef5;
+}
+
+:deep(.dialog-footer .el-button) {
+  font-size: 16px;
 }
 
 .btn-cancel {

@@ -77,6 +77,7 @@
               <template #default="scope">
                 <el-switch
                   v-model="scope.row.isEnabled"
+                  :disabled="scope.row.admin"
                   @change="(val) => handleStatusChange(scope.row, val)"
                 />
               </template>
@@ -84,13 +85,14 @@
 
             <el-table-column label="操作" align="center" width="280" fixed="right">
               <template #default="scope">
-                <div class="action-links">
+                <div class="action-links" v-if="!scope.row.admin">
                   <el-button link type="primary" class="action-link" @click="handleEdit(scope.row)">编辑</el-button>
                   <el-button link type="primary" class="action-link" @click="handleResetPwd(scope.row)">重置</el-button>
 <!--                  <el-button link type="primary" class="action-link">角色分配</el-button>-->
 <!--                  <el-button link type="primary" class="action-link">数据权限分配</el-button>-->
                   <el-button link type="danger" class="action-link action-link-danger" @click="handleDelete(scope.row)">删除</el-button>
                 </div>
+                <span v-else style="color: #909399; font-size: 14px;">-</span>
               </template>
             </el-table-column>
           </el-table>
@@ -185,6 +187,7 @@
               <el-select
                 v-model="form.roleIds"
                 multiple
+                :disabled="form.admin"
                 placeholder="请选择分配的角色"
                 style="width: 100%"
                 clearable
@@ -470,6 +473,7 @@ const handleSelectionChange = (selection) => {
 
 const resetForm = () => {
   form.userId = undefined;
+  form.admin = false;
   form.username = '';
   form.nickname = '';
   form.password = '';
@@ -625,6 +629,7 @@ onMounted(() => {
   padding: 16px;
   box-sizing: border-box;
   background-color: #f0f2f5;
+  font-size: 16px;
 }
 
 /* 布局双栏 */
@@ -658,6 +663,10 @@ onMounted(() => {
   box-shadow: 0 0 0 1px #dcdfe6 inset;
 }
 
+.dept-search-input :deep(.el-input__inner) {
+  font-size: 16px;
+}
+
 .dept-tree-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -666,10 +675,12 @@ onMounted(() => {
 
 .nebula-dept-tree {
   color: #606266;
+  font-size: 16px;
 }
 
 :deep(.nebula-dept-tree .el-tree-node__content) {
-  height: 32px;
+  height: 36px;
+  font-size: 16px;
 }
 :deep(.nebula-dept-tree .el-tree-node.is-current > .el-tree-node__content) {
   background-color: #f5f7fa;
@@ -690,7 +701,7 @@ onMounted(() => {
 
 /* 当前选中 */
 .current-selected {
-  font-size: 14px;
+  font-size: 16px;
   color: #606266;
   margin-bottom: 16px;
   padding-bottom: 16px;
@@ -717,9 +728,13 @@ onMounted(() => {
 .search-input :deep(.el-input__wrapper) {
   border-radius: 4px;
 }
+.search-input :deep(.el-input__inner) {
+  font-size: 16px;
+}
 
 .toolbar-btn {
   border-radius: 4px;
+  font-size: 16px;
 }
 
 .btn-batch {
@@ -740,21 +755,26 @@ onMounted(() => {
 
 .nebula-modern-table {
   width: 100%;
+  font-size: 16px;
 }
 
 :deep(.nebula-modern-table .el-table__header-wrapper th) {
   background-color: #f8f8f9 !important;
   color: #515a6e !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
   height: 44px !important;
   padding: 8px 0;
 }
 
 :deep(.nebula-modern-table td.el-table__cell) {
   padding: 8px 0 !important;
-  font-size: 14px;
+  font-size: 16px !important;
   color: #606266;
+}
+
+:deep(.nebula-modern-table .el-button) {
+  font-size: 16px;
 }
 
 /* 操作列链接 */
@@ -766,7 +786,7 @@ onMounted(() => {
 }
 
 .action-link {
-  font-size: 13px;
+  font-size: 16px;
   padding: 0;
   height: auto;
   margin: 0 !important;
@@ -790,12 +810,21 @@ onMounted(() => {
 
 .footer-info {
   color: #606266;
-  font-size: 14px;
+  font-size: 16px;
+}
+
+:deep(.custom-pagination),
+:deep(.custom-pagination button),
+:deep(.custom-pagination span),
+:deep(.custom-pagination li),
+:deep(.custom-pagination input) {
+  font-size: 15px !important;
 }
 
 /* 对话框通用 */
 :deep(.custom-dialog) {
   border-radius: 4px;
+  font-size: 16px;
 }
 
 :deep(.custom-dialog .el-dialog__header) {
@@ -808,7 +837,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: #303133;
 }
@@ -821,22 +850,34 @@ onMounted(() => {
   padding: 20px 20px 0 20px;
 }
 
+:deep(.dialog-form .el-form-item__label) {
+  font-size: 16px;
+}
+
+:deep(.dialog-form .el-input__inner),
+:deep(.dialog-form .el-textarea__inner),
+:deep(.dialog-form .el-radio__label),
+:deep(.dialog-form .el-tree-select) {
+  font-size: 16px;
+}
+
 .role-option-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  font-size: 16px;
 }
 
 .role-code-desc {
   color: #94a3b8;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .pwd-reset-tips {
   padding: 16px 24px;
   color: #475569;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .text-indigo {
@@ -849,6 +890,10 @@ onMounted(() => {
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid #ebeef5;
+}
+
+:deep(.dialog-footer .el-button) {
+  font-size: 16px;
 }
 
 .btn-cancel {

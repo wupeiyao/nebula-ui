@@ -14,6 +14,16 @@ export function getCaptcha() {
 }
 
 /**
+ * 生成防重放随机数 (Nonce)
+ */
+function generateNonce() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+/**
  * 账户密码登录 (使用国密 SM2 加密传输)
  * @param {Object} data 登录表单数据
  * @param {string} data.username 账号
@@ -30,7 +40,9 @@ export function login(data) {
     credential: data.password,
     client: 'WEB', // WEB 端登录来源
     captchaCode: data.captchaCode,
-    uuid: data.uuid
+    uuid: data.uuid,
+    timestamp: Date.now(),
+    nonce: generateNonce()
   };
 
   // 2. 将整个请求对象序列化为 JSON 字符串并进行国密 SM2 公钥加密

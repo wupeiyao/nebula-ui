@@ -104,7 +104,7 @@
       <div class="layout-container">
         <!-- 多页签 TagsView -->
         <tags-view />
-        
+
         <!-- 主视图渲染区 App Main -->
         <main class="layout-body">
           <router-view v-slot="{ Component }">
@@ -351,7 +351,7 @@ onMounted(async () => {
 
 /* 侧边栏样式 */
 .layout-sidebar {
-  width: 180px;
+  width: 185px;
   height: calc(100% - 32px);
   margin: 8px 0 12px 8px;
   background: #F0FCFF; /* From user requirements */

@@ -347,6 +347,7 @@ onMounted(() => {
   padding: 16px;
   box-sizing: border-box;
   background-color: #f0f2f5;
+  font-size: 16px;
 }
 
 /* 主面板容器 */
@@ -372,6 +373,13 @@ onMounted(() => {
 :deep(.search-bar .el-form-item__label) {
   font-weight: 400;
   color: #606266;
+  font-size: 16px;
+}
+
+:deep(.search-bar .el-input__inner),
+:deep(.search-bar .el-select .el-input__inner),
+:deep(.search-bar .el-button) {
+  font-size: 16px;
 }
 
 .search-input {
@@ -383,7 +391,7 @@ onMounted(() => {
 }
 
 .date-picker-input {
-  width: 240px;
+  width: 260px;
 }
 
 /* 操作栏 */
@@ -396,6 +404,7 @@ onMounted(() => {
 
 .action-left .el-button {
   border-radius: 4px;
+  font-size: 16px;
 }
 
 .tool-btn {
@@ -416,25 +425,30 @@ onMounted(() => {
 
 .nebula-modern-table {
   width: 100%;
+  font-size: 16px;
 }
 
 :deep(.nebula-modern-table .el-table__header-wrapper th) {
   background-color: #f8f8f9 !important;
   color: #515a6e !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
   height: 44px !important;
   padding: 8px 0;
 }
 
 :deep(.nebula-modern-table td.el-table__cell) {
   padding: 8px 0 !important;
-  font-size: 14px;
+  font-size: 16px !important;
   color: #606266;
 }
 
+:deep(.nebula-modern-table .el-button) {
+  font-size: 16px;
+}
+
 .suffix-badge {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: #606266;
   background-color: #f4f4f5;
@@ -452,7 +466,7 @@ onMounted(() => {
 }
 
 .action-link {
-  font-size: 13px;
+  font-size: 16px;
   padding: 0;
   height: auto;
   margin: 0 !important;
@@ -475,13 +489,26 @@ onMounted(() => {
 }
 
 .footer-info {
-  font-size: 14px;
+  font-size: 16px;
   color: #606266;
+}
+
+:deep(.custom-pagination),
+:deep(.custom-pagination button),
+:deep(.custom-pagination span),
+:deep(.custom-pagination li),
+:deep(.custom-pagination input) {
+  font-size: 15px !important;
 }
 
 /* 弹窗样式 */
 :deep(.custom-dialog) {
   border-radius: 4px !important;
+  font-size: 16px;
+}
+
+:deep(.custom-dialog .el-dialog__title) {
+  font-size: 18px;
 }
 
 :deep(.custom-dialog .el-dialog__header) {
@@ -498,6 +525,10 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 
+:deep(.detail-form .el-form-item__label) {
+  font-size: 16px;
+}
+
 .code-box {
   background-color: #f8f8f9;
   border: 1px solid #ebeef5;
@@ -505,7 +536,7 @@ onMounted(() => {
   padding: 8px 12px;
   width: 100%;
   font-family: Consolas, Monaco, monospace;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.5;
   color: #303133;
   word-break: break-all;
@@ -526,6 +557,10 @@ onMounted(() => {
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid #ebeef5;
+}
+
+:deep(.dialog-footer .el-button) {
+  font-size: 16px;
 }
 
 .btn-cancel {

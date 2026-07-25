@@ -13,6 +13,18 @@ export function listDept(query) {
 }
 
 /**
+ * 查询树形部门结构列表
+ * @param {Object} query 查询参数
+ */
+export function getDeptTree(query) {
+  return request({
+    url: '/system/dept/tree',
+    method: 'get',
+    params: query
+  });
+}
+
+/**
  * 分页查询部门列表
  * @param {Object} query 查询参数
  */
