@@ -64,7 +64,13 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/system/login/index.vue'),
-    meta: { title: '登入账户 - 涛神电竞', requiresAuth: false }
+    meta: { title: '登入账户 - 系统', requiresAuth: false }
+  },
+  {
+    path: '/no-menu',
+    name: 'NoMenu',
+    component: () => import('../views/system/noMenu/index.vue'),
+    meta: { title: '暂无菜单权限 - 系统', requiresAuth: true }
   },
   {
     path: '/',
@@ -78,6 +84,12 @@ const routes = [
         name: 'Dashboard',
         component: () => import('../views/system/home/index.vue'),
         meta: { title: '首页', affix: true, requiresAuth: true }
+      },
+      {
+        path: '/user/profile',
+        name: 'Profile',
+        component: () => import('../views/system/user/profile/index.vue'),
+        meta: { title: '个人中心', requiresAuth: true }
       },
       {
         path: '/redirect/:path(.*)*',
@@ -97,7 +109,7 @@ const router = createRouter({
   routes
 });
 
-// 路由守卫：登录拦截与页面标题设置、动态路由加载
+// 路由守卫：登录拦截与页面标题设置、动态路由加载、无菜单权限拦截
 router.beforeEach(async (to, from) => {
   if (to.meta.title) {
     document.title = to.meta.title;
@@ -112,7 +124,7 @@ router.beforeEach(async (to, from) => {
       return { path: '/login', query: redirectQuery };
     }
 
-    if (!authStore.user || !authStore.permissions || authStore.permissions.length === 0) {
+    if (!authStore.user) {
       try {
         await authStore.fetchUserInfo();
       } catch (error) {
@@ -129,16 +141,27 @@ router.beforeEach(async (to, from) => {
           router.addRoute('Layout', route);
         });
         authStore.routesLoaded = true;
-        return { ...to, replace: true };
       } catch (error) {
         console.error('动态加载路由产生异常:', error);
         authStore.routesLoaded = true;
-        return true;
+      }
+    }
+
+    // 判断用户是否有绑定动态菜单
+    const hasMenus = authStore.menus && authStore.menus.length > 0;
+    if (!hasMenus) {
+      if (to.path !== '/no-menu') {
+        return { path: '/no-menu', replace: true };
+      }
+    } else {
+      if (to.path === '/no-menu') {
+        return { path: '/dashboard', replace: true };
       }
     }
   } else {
     if (token && authStore.user && to.path === '/login') {
-      return '/dashboard';
+      const hasMenus = authStore.menus && authStore.menus.length > 0;
+      return hasMenus ? '/dashboard' : '/no-menu';
     }
   }
 });

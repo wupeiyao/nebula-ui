@@ -66,13 +66,13 @@
           >
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column type="index" label="序号" width="60" align="center" />
-            
+
             <el-table-column prop="username" label="用户名" min-width="120" align="center" :show-overflow-tooltip="true" />
             <el-table-column prop="nickname" label="用户昵称" min-width="120" align="center" :show-overflow-tooltip="true" />
             <el-table-column prop="username" label="用户编码(工号)" min-width="130" align="center" :show-overflow-tooltip="true" />
-            <el-table-column prop="userId" label="用户工牌号" min-width="110" align="center" />
+            <el-table-column prop="userId" label="用户工牌号" min-width="110" align="center" :show-overflow-tooltip="true" />
             <el-table-column prop="deptName" label="所属组织" min-width="120" align="center" :show-overflow-tooltip="true" />
-            
+
             <el-table-column prop="status" label="是否启用" align="center" width="90">
               <template #default="scope">
                 <el-switch

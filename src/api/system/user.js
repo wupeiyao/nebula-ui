@@ -85,3 +85,38 @@ export function delUser(userId) {
     method: 'delete'
   });
 }
+
+/**
+ * 获取个人中心资料
+ */
+export function getUserProfile() {
+  return request({
+    url: '/system/user/profile',
+    method: 'get'
+  });
+}
+
+/**
+ * 修改个人资料
+ * @param {Object} data 个人资料 (nickname, mobile, email, avatarUrl)
+ */
+export function updateUserProfile(data) {
+  return request({
+    url: '/system/user/profile',
+    method: 'put',
+    data: data
+  });
+}
+
+/**
+ * 修改个人密码
+ * @param {string} oldPassword 旧密码
+ * @param {string} newPassword 新密码
+ */
+export function updateUserPwd(oldPassword, newPassword) {
+  return request({
+    url: '/system/user/profile/updatePwd',
+    method: 'put',
+    params: { oldPassword, newPassword }
+  });
+}

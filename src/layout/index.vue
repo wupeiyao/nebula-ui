@@ -204,7 +204,7 @@ const handleCommand = (command) => {
       router.push('/login');
     }).catch(() => {});
   } else if (command === 'profile') {
-    ElMessage.info('个人中心准备中...');
+    router.push('/user/profile');
   }
 };
 
