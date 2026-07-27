@@ -28,7 +28,16 @@
         >
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column type="index" label="序号" width="60" align="center" />
-          <el-table-column prop="userId" label="用户ID" min-width="120" align="center" :show-overflow-tooltip="true" />
+          <el-table-column prop="user.username" label="用户名" min-width="120" align="center" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <span>{{ scope.row.user?.username || scope.row.username || '-' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="user.nickname" label="用户昵称" min-width="120" align="center" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <span>{{ scope.row.user?.nickname || scope.row.nickname || '-' }}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="pricePerOrder" label="接单价格" min-width="120" align="center" :show-overflow-tooltip="true" />
           <el-table-column prop="games" label="擅长游戏" min-width="150" align="center" :show-overflow-tooltip="true" />
           <el-table-column prop="onlineStatus" label="在线状态" width="100" align="center">

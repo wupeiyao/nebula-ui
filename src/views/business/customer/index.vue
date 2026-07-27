@@ -28,8 +28,12 @@
         >
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column type="index" label="序号" width="60" align="center" />
-          <el-table-column prop="userId" label="用户ID" min-width="120" align="center" :show-overflow-tooltip="true" />
-          <el-table-column prop="user.nickname" label="客户昵称" min-width="120" align="center" :show-overflow-tooltip="true">
+          <el-table-column prop="user.username" label="用户名" min-width="120" align="center" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <span>{{ scope.row.user?.username || scope.row.username || '-' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="user.nickname" label="用户昵称" min-width="120" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
               <span>{{ scope.row.user?.nickname || scope.row.nickname || '-' }}</span>
             </template>
@@ -194,7 +198,7 @@
 
       <el-form ref="rechargeRef" :model="rechargeForm" :rules="rechargeRules" label-width="100px" class="dialog-form">
         <el-form-item label="客户信息">
-          <el-input :value="rechargeForm.nickname + ' (' + rechargeForm.userId + ')'" disabled />
+          <el-input :value="rechargeForm.username + ' (' + rechargeForm.nickname + ')'" disabled />
         </el-form-item>
 
         <el-form-item label="当前余额">
@@ -257,8 +261,8 @@
     >
       <template #header>
         <div class="drawer-header">
-          <span class="drawer-title">客户资金变动明细 - {{ currentCustomer.user?.nickname || currentCustomer.nickname || currentCustomer.userId }}</span>
-          <span class="drawer-sub">客户ID: {{ currentCustomer.userId }} | 当前余额: ￥{{ formatAmount(currentCustomer.walletBalance) }}</span>
+          <span class="drawer-title">客户资金变动明细</span>
+          <span class="drawer-sub">用户名: {{ currentCustomer.user?.username || currentCustomer.username || '-' }} | 昵称: {{ currentCustomer.user?.nickname || currentCustomer.nickname || '-' }} | 当前余额: ￥{{ formatAmount(currentCustomer.walletBalance) }}</span>
         </div>
       </template>
 
@@ -363,6 +367,7 @@ const rechargeLoading = ref(false);
 const rechargeRef = ref(null);
 const rechargeForm = reactive({
   userId: '',
+  username: '',
   nickname: '',
   walletBalance: 0,
   changeType: 'RECHARGE',
@@ -512,6 +517,7 @@ function handleUpdate(row) {
 /** 充值按钮操作 */
 function handleRecharge(row) {
   rechargeForm.userId = row.userId;
+  rechargeForm.username = row.user?.username || row.username || '-';
   rechargeForm.nickname = row.user?.nickname || row.nickname || row.userId;
   rechargeForm.walletBalance = row.walletBalance || 0;
   rechargeForm.changeType = 'RECHARGE';
