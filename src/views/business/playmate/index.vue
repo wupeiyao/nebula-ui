@@ -40,6 +40,12 @@
           </el-table-column>
           <el-table-column prop="pricePerOrder" label="接单价格" min-width="120" align="center" :show-overflow-tooltip="true" />
           <el-table-column prop="games" label="擅长游戏" min-width="150" align="center" :show-overflow-tooltip="true" />
+          <el-table-column prop="isTakingOrders" label="接单状态" width="100" align="center">
+            <template #default="scope">
+              <el-tag v-if="scope.row.isTakingOrders === '1'" type="success">接单中</el-tag>
+              <el-tag v-else type="info">休息</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="onlineStatus" label="在线状态" width="100" align="center">
             <template #default="scope">
               <el-tag v-if="scope.row.onlineStatus === '1'" type="success">在线</el-tag>
@@ -141,6 +147,16 @@
             </el-form-item>
           </el-col>
 
+          <el-col :span="12">
+            <el-form-item label="在线状态" prop="onlineStatus">
+              <el-radio-group v-model="form.onlineStatus">
+                <el-radio label="1">在线</el-radio>
+                <el-radio label="2">忙碌</el-radio>
+                <el-radio label="0">离线</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+
           <el-col :span="24">
             <el-form-item label="备注说明" prop="remark">
               <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="请输入备注信息" />
@@ -176,7 +192,8 @@ const title = ref("");
 
 const data = reactive({
   form: {
-    isTakingOrders: "0"
+    isTakingOrders: "0",
+    onlineStatus: "0"
   },
   queryParams: {
     pageIndex: 1,
@@ -232,6 +249,7 @@ function reset() {
     pricePerOrder: 0,
     games: undefined,
     isTakingOrders: "0",
+    onlineStatus: "0",
     remark: undefined
   };
   if (playmateRef.value) {
@@ -281,6 +299,7 @@ function handleUpdate(row) {
       pricePerOrder: resData.pricePerOrder ?? 0,
       games: resData.games,
       isTakingOrders: resData.isTakingOrders != null ? String(resData.isTakingOrders) : "0",
+      onlineStatus: resData.onlineStatus != null ? String(resData.onlineStatus) : "0",
       remark: userData.remark || resData.remark
     };
     open.value = true;
