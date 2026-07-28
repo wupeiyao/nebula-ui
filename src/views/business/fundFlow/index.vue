@@ -7,7 +7,7 @@
           <el-card class="stat-card turnover-card" shadow="hover">
             <div class="stat-icon-wrapper"><el-icon><Money /></el-icon></div>
             <div class="stat-content">
-              <div class="stat-title">今日营业额</div>
+              <div class="stat-title">期间营业额</div>
               <div class="stat-value">￥{{ formatAmount(statistics.todayTurnover) }}</div>
               <div class="stat-desc">累计营业额 ￥{{ formatAmount(statistics.totalTurnover) }}</div>
             </div>
@@ -17,7 +17,7 @@
           <el-card class="stat-card profit-card" shadow="hover">
             <div class="stat-icon-wrapper"><el-icon><DataLine /></el-icon></div>
             <div class="stat-content">
-              <div class="stat-title">今日平台收益</div>
+              <div class="stat-title">期间平台收益</div>
               <div class="stat-value">￥{{ formatAmount(statistics.todayPlatformCommission) }}</div>
               <div class="stat-desc">累计平台收益 ￥{{ formatAmount(statistics.totalPlatformCommission) }}</div>
             </div>
@@ -27,9 +27,9 @@
           <el-card class="stat-card recharge-card" shadow="hover">
             <div class="stat-icon-wrapper"><el-icon><Wallet /></el-icon></div>
             <div class="stat-content">
-              <div class="stat-title">今日充值金额</div>
+              <div class="stat-title">期间充值金额</div>
               <div class="stat-value">￥{{ formatAmount(statistics.todayRecharge) }}</div>
-              <div class="stat-desc">今日总流水 ￥{{ formatAmount(statistics.todayTotalFlowAmount) }}</div>
+              <div class="stat-desc">期间总流水 ￥{{ formatAmount(statistics.todayTotalFlowAmount) }}</div>
             </div>
           </el-card>
         </el-col>
@@ -37,9 +37,9 @@
           <el-card class="stat-card refund-card" shadow="hover">
             <div class="stat-icon-wrapper"><el-icon><Warning /></el-icon></div>
             <div class="stat-content">
-              <div class="stat-title">今日退款金额</div>
+              <div class="stat-title">期间退款金额</div>
               <div class="stat-value">￥{{ formatAmount(statistics.todayRefund) }}</div>
-              <div class="stat-desc">今日提现 ￥{{ formatAmount(statistics.todayWithdraw) }}</div>
+              <div class="stat-desc">期间提现 ￥{{ formatAmount(statistics.todayWithdraw) }}</div>
             </div>
           </el-card>
         </el-col>
@@ -61,6 +61,17 @@
           class="search-input"
           @keyup.enter="handleQuery"
           @clear="handleQuery"
+        />
+
+        <el-date-picker
+          v-model="dateRange"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          style="width: 320px"
+          @change="handleQuery"
         />
 
         <el-input
@@ -225,6 +236,7 @@ const flowList = ref([]);
 const loading = ref(true);
 const statLoading = ref(true);
 const total = ref(0);
+const dateRange = ref([]);
 
 const statistics = ref({
   todayTurnover: 0,
@@ -280,7 +292,7 @@ function getBusinessTypeTag(type) {
 /** 获取统计大屏数据 */
 function getStatistics() {
   statLoading.value = true;
-  getFundStatistics().then(res => {
+  getFundStatistics(queryParams).then(res => {
     const data = res.result || res.data || res;
     statistics.value = data;
     statLoading.value = false;
@@ -305,6 +317,14 @@ function getList() {
 /** 搜索与重置 */
 function handleQuery() {
   queryParams.pageIndex = 1;
+  if (dateRange.value && dateRange.value.length === 2) {
+    queryParams.beginTime = dateRange.value[0];
+    queryParams.endTime = dateRange.value[1];
+  } else {
+    queryParams.beginTime = undefined;
+    queryParams.endTime = undefined;
+  }
+  getStatistics();
   getList();
 }
 
@@ -314,6 +334,7 @@ function resetQuery() {
   queryParams.userType = undefined;
   queryParams.businessType = undefined;
   queryParams.flowDirection = undefined;
+  dateRange.value = [];
   handleQuery();
 }
 

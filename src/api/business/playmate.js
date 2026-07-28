@@ -43,3 +43,38 @@ export function delPlaymate(userId) {
     method: 'delete'
   });
 }
+
+// 打卡/记录陪玩在线时长
+export function recordOnlineLog(data) {
+  return request({
+    url: '/business/playmate/online-log',
+    method: 'post',
+    data: data
+  });
+}
+
+// 分页查询陪玩在线时长日志
+export function listOnlineLogs(query) {
+  return request({
+    url: '/business/playmate/online-log/list',
+    method: 'get',
+    params: query
+  });
+}
+
+// 多维度在线时长统计
+export function getOnlineStats(query) {
+  return request({
+    url: '/business/playmate/online-log/stats',
+    method: 'get',
+    params: query
+  });
+}
+
+// 获取陪玩在线时长统计汇总
+export function getOnlineSummary(playmateId) {
+  return request({
+    url: `/business/playmate/online-log/summary/${playmateId}`,
+    method: 'get'
+  });
+}

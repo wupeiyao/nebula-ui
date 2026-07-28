@@ -10,9 +10,10 @@ export function listFundFlow(query) {
 }
 
 // 获取平台资金大屏统计指标及排行榜
-export function getFundStatistics() {
+export function getFundStatistics(query) {
   return request({
     url: '/business/fund-flow/statistics',
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
