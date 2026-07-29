@@ -1,8 +1,8 @@
 <template>
   <el-dialog
     v-model="dialogVisible"
-    title="选择客户"
-    width="750px"
+    title="选择老板/客户"
+    width="800px"
     append-to-body
     destroy-on-close
     class="custom-dialog"
@@ -21,6 +21,16 @@
           <el-icon><Search /></el-icon> 查询
         </el-button>
         <el-button @click="resetQuery">重置</el-button>
+
+        <div v-if="multiple" style="flex: 1; text-align: right;">
+          <el-button
+            type="success"
+            :disabled="selectedRows.length === 0"
+            @click="handleBatchConfirm"
+          >
+            确认添加选中 ({{ selectedRows.length }})
+          </el-button>
+        </div>
       </div>
 
       <el-table
@@ -31,7 +41,9 @@
         highlight-current-row
         style="width: 100%; margin-top: 12px;"
         max-height="380"
+        @selection-change="handleSelectionChange"
       >
+        <el-table-column v-if="multiple" type="selection" width="50" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="user.username" label="用户名" min-width="120" align="center">
           <template #default="scope">
@@ -43,9 +55,9 @@
             <span>{{ scope.row.user?.nickname || scope.row.nickname || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="user.mobile" label="手机号" min-width="120" align="center">
+        <el-table-column prop="walletBalance" label="钱包余额" width="110" align="center">
           <template #default="scope">
-            <span>{{ scope.row.user?.mobile || scope.row.mobile || '-' }}</span>
+            <span style="color:#f56c6c; font-weight:bold;">￥{{ scope.row.walletBalance || '0.00' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="vipLevel" label="VIP" width="90" align="center">
@@ -55,8 +67,8 @@
         </el-table-column>
         <el-table-column label="操作" width="90" align="center">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleSelect(scope.row)">
-              选择
+            <el-button type="primary" size="small" plain @click="handleSelect(scope.row)">
+              {{ multiple ? '添加' : '选择' }}
             </el-button>
           </template>
         </el-table-column>
@@ -86,6 +98,10 @@ const props = defineProps({
   visible: {
     type: Boolean,
     default: false
+  },
+  multiple: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -99,6 +115,7 @@ const dialogVisible = computed({
 const customerList = ref([]);
 const loading = ref(false);
 const total = ref(0);
+const selectedRows = ref([]);
 
 const queryParams = reactive({
   pageIndex: 1,
@@ -128,13 +145,29 @@ function resetQuery() {
   handleQuery();
 }
 
+function handleSelectionChange(selection) {
+  selectedRows.value = selection;
+}
+
 function handleSelect(row) {
-  emit('select', row);
+  if (props.multiple) {
+    emit('select', [row]);
+  } else {
+    emit('select', row);
+  }
   dialogVisible.value = false;
+}
+
+function handleBatchConfirm() {
+  if (selectedRows.value.length > 0) {
+    emit('select', [...selectedRows.value]);
+    dialogVisible.value = false;
+  }
 }
 
 watch(() => props.visible, (newVal) => {
   if (newVal) {
+    selectedRows.value = [];
     getList();
   }
 });

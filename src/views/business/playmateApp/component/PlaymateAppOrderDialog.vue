@@ -16,9 +16,9 @@
           </div>
           <div class="header-text-group">
             <div class="header-title-row">
-              <span class="main-title">发起全新订单</span>
+              <span class="main-title">发起全新陪玩订单</span>
               <el-tag type="primary" effect="light" size="small" class="live-tag">
-                <span class="dot-flash"></span> 订单管理
+                <span class="dot-flash"></span> 陪玩工作台专享
               </el-tag>
             </div>
             <p class="sub-title">租赁模式与单价由字典自动结算 · 智能按老板人数切换包车/拼车</p>
@@ -268,8 +268,8 @@ import {
 } from '@element-plus/icons-vue';
 import { addOrder } from '../../../../api/business/order.js';
 import { getDicts } from '../../../../api/system/dict.js';
-import CustomerSelectDialog from './CustomerSelectDialog.vue';
-import PlaymateSelectDialog from './PlaymateSelectDialog.vue';
+import CustomerSelectDialog from '../../order/component/CustomerSelectDialog.vue';
+import PlaymateSelectDialog from '../../order/component/PlaymateSelectDialog.vue';
 import { ElMessage } from 'element-plus';
 
 const props = defineProps({
@@ -798,25 +798,30 @@ watch(() => props.visible, (newVal) => {
 
 .rate-tag {
   font-weight: 700;
+  border-radius: 6px;
 }
 
-/* 空状态卡片设计 */
+.btn-table-del {
+  font-size: 12px;
+}
+
+/* 老板未选择时的 Empty 状态 */
 .empty-selection-card {
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background: #f8fafc;
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 24px;
+  background: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .empty-selection-card:hover {
-  background: #eff6ff;
   border-color: #3b82f6;
+  background: #f0f7ff;
 }
 
 .empty-icon-wrapper {
@@ -829,10 +834,11 @@ watch(() => props.visible, (newVal) => {
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .empty-selection-card:hover .empty-icon-wrapper {
+  transform: scale(1.1);
   background: #3b82f6;
   color: #ffffff;
 }
@@ -854,10 +860,10 @@ watch(() => props.visible, (newVal) => {
   margin-top: 2px;
 }
 
-/* 同行卡片 GRID */
+/* 同行陪玩 Chip Card 网格 */
 .playmate-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
 }
 
@@ -865,8 +871,8 @@ watch(() => props.visible, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
   border-radius: 10px;
   padding: 10px 14px;
 }
@@ -875,61 +881,73 @@ watch(() => props.visible, (newVal) => {
   display: flex;
   align-items: center;
   gap: 10px;
+  overflow: hidden;
 }
 
 .pm-chip-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #d1fae5;
-  color: #059669;
+  background: #16a34a;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  flex-shrink: 0;
 }
 
 .pm-chip-meta {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .pm-chip-name {
   font-size: 13px;
   font-weight: 700;
-  color: #1e293b;
+  color: #14532d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pm-chip-game {
   font-size: 11px;
-  color: #64748b;
+  color: #16a34a;
 }
 
 .empty-pm-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f8fafc;
   border: 1px dashed #cbd5e1;
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #94a3b8;
   font-size: 13px;
-  color: #64748b;
   cursor: pointer;
+  background: #ffffff;
   transition: all 0.2s ease;
 }
 
 .empty-pm-card:hover {
-  background: #f0fdf4;
-  border-color: #10b981;
-  color: #047857;
+  border-color: #16a34a;
+  color: #16a34a;
 }
 
 .empty-pm-icon {
   font-size: 18px;
 }
 
-/* 底部操作 Footer */
+.custom-textarea :deep(.el-textarea__inner) {
+  border-radius: 8px;
+  border-color: #cbd5e1;
+  padding: 10px 12px;
+}
+
+/* 底部 Actions */
 .dialog-footer-actions {
   display: flex;
   justify-content: flex-end;
@@ -948,14 +966,10 @@ watch(() => props.visible, (newVal) => {
   font-weight: 700;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border: none;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.35);
 }
-
-.custom-textarea :deep(.el-textarea__inner) {
-  border-radius: 8px;
-  border-color: #cbd5e1;
-  padding: 10px 12px;
-  font-size: 13px;
+.btn-footer-submit:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
 }
 
 .mr-1 { margin-right: 4px; }

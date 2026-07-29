@@ -62,3 +62,12 @@ export function listCustomerBalanceLog(query) {
   });
 }
 
+// 获取客户大屏核心统计数据
+export function getCustomerDashboardStats(query) {
+  return request({
+    url: '/business/customer/dashboard-stats',
+    method: 'get',
+    params: query
+  });
+}
+

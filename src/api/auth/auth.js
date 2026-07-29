@@ -71,3 +71,29 @@ export function getUserInfo() {
     method: 'get'
   });
 }
+
+/**
+ * 客户账户自主注册
+ * @param {Object} data 注册表单数据
+ * @returns {Promise} CommonResponse<Boolean>
+ */
+export function register(data) {
+  return request({
+    url: '/authorize/register',
+    method: 'post',
+    data
+  });
+}
+
+/**
+ * 发送注册邮箱验证码
+ * @param {string} email 接收验证码的邮箱地址
+ */
+export function sendEmailCode(email) {
+  return request({
+    url: '/authorize/send-email-code',
+    method: 'post',
+    params: { email }
+  });
+}
+

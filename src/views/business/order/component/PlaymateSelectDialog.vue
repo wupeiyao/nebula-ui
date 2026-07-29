@@ -42,7 +42,7 @@
         max-height="400"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="50" align="center" />
+        <el-table-column type="selection" width="50" align="center" :selectable="checkSelectable" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         
         <el-table-column prop="user.nickname" label="陪玩昵称" min-width="120" align="center">
@@ -73,9 +73,18 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="90" align="center">
+        <el-table-column label="操作" width="110" align="center">
           <template #default="scope">
-            <el-button type="primary" size="small" plain @click="handleSelectSingle(scope.row)">
+            <el-tooltip
+              v-if="scope.row.onlineStatus !== '1'"
+              :content="scope.row.onlineStatus === '2' ? '陪玩处于忙碌中，不可选择接单' : '陪玩处于离线中，不可选择接单'"
+              placement="top"
+            >
+              <el-button type="info" size="small" plain disabled>
+                无法接单
+              </el-button>
+            </el-tooltip>
+            <el-button v-else type="primary" size="small" plain @click="handleSelectSingle(scope.row)">
               添加
             </el-button>
           </template>
@@ -160,6 +169,10 @@ function handleQuery() {
 function resetQuery() {
   queryParams.userId = undefined;
   handleQuery();
+}
+
+function checkSelectable(row) {
+  return row && row.onlineStatus === '1';
 }
 
 function handleSelectionChange(selection) {

@@ -44,6 +44,22 @@ export function delOrder(id) {
   });
 }
 
+// 订单开始计时
+export function startTimingOrder(id) {
+  return request({
+    url: `/business/order/${id}/start-timing`,
+    method: 'post'
+  });
+}
+
+// 订单结束计时
+export function stopTimingOrder(id) {
+  return request({
+    url: `/business/order/${id}/stop-timing`,
+    method: 'post'
+  });
+}
+
 // 订单支付扣款
 export function payOrder(id) {
   return request({
@@ -68,3 +84,4 @@ export function refundOrder(id, data) {
     params: data
   });
 }
+

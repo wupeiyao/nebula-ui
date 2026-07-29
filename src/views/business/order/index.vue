@@ -13,35 +13,15 @@
         />
 
         <el-select
-          v-model="queryParams.orderType"
-          placeholder="订单类型"
-          clearable
-          style="width: 130px"
-          @change="handleQuery"
-        >
-          <el-option label="单排" value="SOLO" />
-          <el-option label="双排" value="DUO" />
-          <el-option label="三排" value="TRIPLE" />
-          <el-option label="包车" value="TEAM" />
-          <el-option label="自定义" value="CUSTOM" />
-        </el-select>
-
-        <el-select
           v-model="queryParams.status"
           placeholder="订单状态"
           clearable
           style="width: 140px"
           @change="handleQuery"
         >
-          <el-option label="待创建" value="CREATED" />
-          <el-option label="待支付" value="UNPAID" />
-          <el-option label="已支付" value="PAID" />
-          <el-option label="待开始" value="WAITING_START" />
-          <el-option label="服务中" value="IN_SERVICE" />
+          <el-option label="未计时" value="WAITING_START" />
+          <el-option label="进行中" value="IN_SERVICE" />
           <el-option label="已完成" value="COMPLETED" />
-          <el-option label="已取消" value="CANCELLED" />
-          <el-option label="已退款" value="REFUNDED" />
-          <el-option label="已关闭" value="CLOSED" />
         </el-select>
 
         <el-input
@@ -61,7 +41,7 @@
           <el-icon><RefreshRight /></el-icon> 重置
         </el-button>
         <el-button type="primary" class="toolbar-btn" @click="handleAdd">
-          <el-icon><Plus /></el-icon> 新增订单
+          <el-icon><Plus /></el-icon> 发起全新订单
         </el-button>
       </div>
 
@@ -108,7 +88,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="serviceHours" label="时长/局数" width="130" align="center" :show-overflow-tooltip="true" >
+          <el-table-column prop="serviceHours" label="时长/局数" width="130" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
               <span>{{ scope.row.serviceHours || 1 }} {{ scope.row.serviceUnit === 'GAME' ? '局' : '小时' }}</span>
             </template>
@@ -131,13 +111,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="platformProfit" label="平台收益" min-width="110" align="center">
-            <template #default="scope">
-              <span class="profit-text">￥{{ formatAmount(scope.row.platformProfit) }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="status" label="订单状态" width="110" align="center" :show-overflow-tooltip="true" >
+          <el-table-column prop="status" label="订单状态" width="110" align="center" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-tag :type="getOrderStatusTag(scope.row.status).type" effect="dark">
                 {{ getOrderStatusTag(scope.row.status).label }}
@@ -147,42 +121,31 @@
 
           <el-table-column prop="createTime" label="创建时间" min-width="160" align="center" :show-overflow-tooltip="true" />
 
-          <el-table-column label="操作" align="center" width="280" fixed="right">
+          <el-table-column label="操作" align="center" width="220" fixed="right">
             <template #default="scope">
               <div class="action-links">
-                <el-button link type="info" class="action-link" @click="handleViewDetail(scope.row)">详情</el-button>
-
                 <el-button
-                  v-if="scope.row.status === 'CREATED' || scope.row.status === 'UNPAID'"
-                  link
-                  type="warning"
-                  class="action-link"
-                  @click="handlePay(scope.row)"
-                >
-                  支付
-                </el-button>
-
-                <el-button
-                  v-if="scope.row.status === 'PAID' || scope.row.status === 'WAITING_START' || scope.row.status === 'IN_SERVICE'"
+                  v-if="scope.row.status === 'WAITING_START' || scope.row.status === 'CREATED' || scope.row.status === 'UNPAID' || scope.row.status === 'PAID'"
                   link
                   type="success"
-                  class="action-link"
-                  @click="handleComplete(scope.row)"
+                  class="action-link action-link-success"
+                  @click="handleStartTimer(scope.row)"
                 >
-                  结算
+                  开始计时
                 </el-button>
 
                 <el-button
-                  v-if="scope.row.status === 'PAID' || scope.row.status === 'WAITING_START' || scope.row.status === 'IN_SERVICE'"
+                  v-if="scope.row.status === 'IN_SERVICE'"
                   link
                   type="danger"
-                  class="action-link"
-                  @click="handleOpenRefund(scope.row)"
+                  class="action-link action-link-danger"
+                  @click="handleStopTimer(scope.row)"
                 >
-                  退款
+                  结束计时
                 </el-button>
 
-                <el-button v-if="scope.row.status !== 'COMPLETED'" link type="primary" class="action-link" @click="handleUpdate(scope.row)">编辑</el-button>
+                <el-button link type="info" class="action-link" @click="handleViewDetail(scope.row)">详情</el-button>
+
                 <el-button link type="danger" class="action-link action-link-danger" @click="handleDelete(scope.row)">删除</el-button>
               </div>
             </template>
@@ -209,62 +172,11 @@
       </div>
     </div>
 
-    <!-- 抽离的新增/编辑订单弹窗组件 -->
+    <!-- 抽离的新增订单弹窗组件 -->
     <OrderFormDialog
       v-model:visible="formDialogVisible"
-      :is-edit="isEdit"
-      :order-data="editingOrder"
       @submit-success="getList"
     />
-
-    <!-- 订单退款对话框 -->
-    <el-dialog
-      v-model="refundOpen"
-      title="订单退款"
-      width="540px"
-      append-to-body
-      destroy-on-close
-      class="custom-dialog"
-    >
-      <template #header>
-        <div class="dialog-header-title">
-          <el-icon class="header-icon text-danger"><Money /></el-icon>
-          <span>订单退款处理</span>
-        </div>
-      </template>
-
-      <el-form ref="refundRef" :model="refundForm" :rules="refundRules" label-width="100px" class="dialog-form">
-        <el-form-item label="订单编号">
-          <el-input :value="refundForm.orderNo" disabled />
-        </el-form-item>
-
-        <el-form-item label="订单总金额">
-          <div class="amount-text bold">￥{{ formatAmount(refundForm.totalAmount) }}</div>
-        </el-form-item>
-
-        <el-form-item label="退款金额" prop="refundAmount">
-          <el-input-number
-            v-model="refundForm.refundAmount"
-            :precision="2"
-            :step="10"
-            :max="refundForm.totalAmount"
-            style="width: 100%"
-          />
-          <div class="form-tip">提示：默认全额退款，可手动调整部分退款金额</div>
-        </el-form-item>
-
-        <el-form-item label="退款原因" prop="remark">
-          <el-input v-model="refundForm.remark" type="textarea" :rows="3" placeholder="请输入退款原因或备注说明" />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button class="btn-cancel" @click="refundOpen = false">取 消</el-button>
-          <el-button type="danger" class="btn-submit" :loading="refundLoading" @click="submitRefundForm">确认退款</el-button>
-        </div>
-      </template>
-    </el-dialog>
 
     <!-- 订单详细信息 Drawer 抽屉 -->
     <el-drawer
@@ -298,9 +210,6 @@
           <el-descriptions-item label="预计结束时间">{{ currentOrder.endTime || '-' }}</el-descriptions-item>
           <el-descriptions-item label="订单总金额">
             <span class="amount-text bold">￥{{ formatAmount(currentOrder.totalAmount) }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="平台抽成收益">
-            <span class="profit-text bold">￥{{ formatAmount(currentOrder.platformProfit) }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ currentOrder.createTime || '-' }}</el-descriptions-item>
           <el-descriptions-item label="更新时间">{{ currentOrder.updateTime || '-' }}</el-descriptions-item>
@@ -355,15 +264,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { Search, RefreshRight, Plus, Money } from '@element-plus/icons-vue';
+import { Search, RefreshRight, Plus } from '@element-plus/icons-vue';
 import OrderFormDialog from './component/OrderFormDialog.vue';
 import {
   listOrder,
   getOrder,
   delOrder,
-  payOrder,
-  completeOrder,
-  refundOrder
+  startTimingOrder,
+  stopTimingOrder
 } from '../../../api/business/order.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -374,29 +282,10 @@ const ids = ref([]);
 
 // 弹窗控制
 const formDialogVisible = ref(false);
-const isEdit = ref(false);
-const editingOrder = ref({});
 
 // 详细 Drawer
 const detailDrawerOpen = ref(false);
 const currentOrder = ref({});
-
-// 退款 Dialog
-const refundOpen = ref(false);
-const refundLoading = ref(false);
-const refundRef = ref(null);
-const refundForm = reactive({
-  id: '',
-  orderNo: '',
-  totalAmount: 0,
-  refundAmount: 0,
-  remark: ''
-});
-
-const refundRules = {
-  refundAmount: [{ required: true, message: '退款金额不能为空', trigger: 'blur' }],
-  remark: [{ required: true, message: '请输入退款原因说明', trigger: 'blur' }]
-};
 
 const queryParams = reactive({
   pageIndex: 1,
@@ -419,6 +308,8 @@ function getOrderTypeTag(type) {
     case 'DUO': return { type: 'success', label: '双排' };
     case 'TRIPLE': return { type: 'warning', label: '三排' };
     case 'TEAM': return { type: 'danger', label: '包车' };
+    case 'CARPOOL': return { type: 'warning', label: '拼车' };
+    case 'CHARTER': return { type: 'danger', label: '包车' };
     case 'CUSTOM': return { type: 'info', label: '自定义' };
     default: return { type: 'info', label: type || '其他' };
   }
@@ -430,8 +321,8 @@ function getOrderStatusTag(status) {
     case 'CREATED': return { type: 'info', label: '待创建' };
     case 'UNPAID': return { type: 'warning', label: '待支付' };
     case 'PAID': return { type: '', label: '已支付' };
-    case 'WAITING_START': return { type: 'info', label: '待开始' };
-    case 'IN_SERVICE': return { type: 'warning', label: '服务中' };
+    case 'WAITING_START': return { type: 'info', label: '未计时' };
+    case 'IN_SERVICE': return { type: 'warning', label: '进行中' };
     case 'COMPLETED': return { type: 'success', label: '已完成' };
     case 'CANCELLED': return { type: 'info', label: '已取消' };
     case 'REFUNDED': return { type: 'danger', label: '已退款' };
@@ -484,20 +375,35 @@ function handleSelectionChange(selection) {
 
 /** 新增订单操作 */
 function handleAdd() {
-  isEdit.value = false;
-  editingOrder.value = {};
   formDialogVisible.value = true;
 }
 
-/** 修改订单操作 */
-function handleUpdate(row) {
-  const id = row.id || ids.value[0];
-  getOrder(id).then(response => {
-    const resData = response.result || response.data || response;
-    editingOrder.value = resData;
-    isEdit.value = true;
-    formDialogVisible.value = true;
-  });
+/** 开始计时 */
+function handleStartTimer(row) {
+  ElMessageBox.confirm(`确定要开始对订单 [${row.orderNo}] 计时吗？`, '开始计时确认', {
+    confirmButtonText: '立即开始',
+    cancelButtonText: '取消',
+    type: 'success'
+  }).then(() => {
+    return startTimingOrder(row.id);
+  }).then(() => {
+    ElMessage.success("已成功开始计时！");
+    getList();
+  }).catch(() => {});
+}
+
+/** 结束计时并结算 */
+function handleStopTimer(row) {
+  ElMessageBox.confirm(`确定要结束订单 [${row.orderNo}] 的计时并结算吗？`, '结束计时确认', {
+    confirmButtonText: '结束并结算',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    return stopTimingOrder(row.id);
+  }).then(() => {
+    ElMessage.success("订单已完成结算！");
+    getList();
+  }).catch(() => {});
 }
 
 /** 删除订单 */
@@ -513,65 +419,6 @@ function handleDelete(row) {
     getList();
     ElMessage.success("删除成功");
   }).catch(() => {});
-}
-
-/** 订单支付 */
-function handlePay(row) {
-  ElMessageBox.confirm(`确认使用客户账号扣款支付订单 [${row.orderNo}] (总额: ￥${formatAmount(row.totalAmount)})?`, "订单支付", {
-    confirmButtonText: "确认扣款支付",
-    cancelButtonText: "取消",
-    type: "warning"
-  }).then(() => {
-    return payOrder(row.id);
-  }).then(() => {
-    ElMessage.success("订单支付成功！");
-    getList();
-  }).catch(() => {});
-}
-
-/** 订单服务完成结算 */
-function handleComplete(row) {
-  ElMessageBox.confirm(`确认结算订单 [${row.orderNo}]? 完成结算后将自动发放陪玩收益与平台抽成！`, "服务完成结算", {
-    confirmButtonText: "确认结算发放",
-    cancelButtonText: "取消",
-    type: "success"
-  }).then(() => {
-    return completeOrder(row.id);
-  }).then(() => {
-    ElMessage.success("订单结算发放完成！");
-    getList();
-  }).catch(() => {});
-}
-
-/** 打开退款弹窗 */
-function handleOpenRefund(row) {
-  refundForm.id = row.id;
-  refundForm.orderNo = row.orderNo;
-  refundForm.totalAmount = row.totalAmount;
-  refundForm.refundAmount = row.totalAmount;
-  refundForm.remark = '';
-  refundOpen.value = true;
-}
-
-/** 提交退款 */
-function submitRefundForm() {
-  if (refundRef.value) {
-    refundRef.value.validate(valid => {
-      if (valid) {
-        refundLoading.value = true;
-        refundOrder(refundForm.id, {
-          refundAmount: refundForm.refundAmount,
-          remark: refundForm.remark
-        }).then(() => {
-          ElMessage.success("订单退款成功！");
-          refundOpen.value = false;
-          getList();
-        }).finally(() => {
-          refundLoading.value = false;
-        });
-      }
-    });
-  }
 }
 
 /** 查看订单详情 Drawer */
@@ -672,11 +519,6 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.profit-text {
-  color: #67c23a;
-  font-weight: 600;
-}
-
 .income-text {
   color: #67c23a;
 }
@@ -710,6 +552,10 @@ onMounted(() => {
   margin: 0 !important;
 }
 
+.action-link-success {
+  color: #67c23a;
+}
+
 .action-link-danger {
   color: #f56c6c;
 }
@@ -733,48 +579,6 @@ onMounted(() => {
 :deep(.custom-pagination li),
 :deep(.custom-pagination input) {
   font-size: 15px !important;
-}
-
-:deep(.custom-dialog) {
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-:deep(.custom-dialog .el-dialog__header) {
-  margin: 0;
-  padding: 16px 20px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.dialog-header-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 500;
-  color: #303133;
-}
-
-.dialog-form {
-  padding: 20px 20px 0 20px;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 20px;
-  border-top: 1px solid #ebeef5;
-}
-
-.text-danger {
-  color: #f56c6c;
-}
-
-.form-tip {
-  font-size: 13px;
-  color: #909399;
-  margin-top: 4px;
 }
 
 .drawer-header {
