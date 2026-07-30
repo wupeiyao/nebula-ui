@@ -193,6 +193,18 @@
             @clear="handleQuery"
           />
 
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            clearable
+            style="width: 240px;"
+            @change="handleDateRangeChange"
+          />
+
           <el-button type="primary" class="toolbar-btn" @click="handleQuery">
             <el-icon><Search /></el-icon> 查询
           </el-button>
@@ -399,13 +411,17 @@ const currentTimingOrder = ref(null);
 const liveTickerText = ref('00:00:00');
 let timerInterval = null;
 
+const dateRange = ref([]);
+
 const queryParams = reactive({
   pageIndex: 1,
   pageSize: 10,
   customerId: undefined,
   orderNo: undefined,
   status: undefined,
-  serviceType: undefined
+  serviceType: undefined,
+  beginTime: undefined,
+  endTime: undefined
 });
 
 const logQueryParams = reactive({
@@ -515,7 +531,9 @@ function getList() {
     customerId: selectedCustomerId.value,
     orderNo: queryParams.orderNo || undefined,
     status: queryParams.status || undefined,
-    serviceType: queryParams.serviceType || undefined
+    serviceType: queryParams.serviceType || undefined,
+    beginTime: queryParams.beginTime || undefined,
+    endTime: queryParams.endTime || undefined
   };
 
   listOrder(req).then(res => {
@@ -561,10 +579,24 @@ function handleQuery() {
   getList();
 }
 
+function handleDateRangeChange(val) {
+  if (Array.isArray(val) && val.length === 2) {
+    queryParams.beginTime = val[0] + ' 00:00:00';
+    queryParams.endTime = val[1] + ' 23:59:59';
+  } else {
+    queryParams.beginTime = undefined;
+    queryParams.endTime = undefined;
+  }
+  handleQuery();
+}
+
 function resetQuery() {
   queryParams.orderNo = undefined;
   queryParams.status = undefined;
   queryParams.serviceType = undefined;
+  queryParams.beginTime = undefined;
+  queryParams.endTime = undefined;
+  dateRange.value = [];
   activeTab.value = 'ALL';
   handleQuery();
 }
@@ -1014,12 +1046,15 @@ onUnmounted(() => {
   align-items: center;
   margin-bottom: 12px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .filter-right-inputs {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .table-wrapper {

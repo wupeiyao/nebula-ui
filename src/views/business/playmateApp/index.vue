@@ -135,6 +135,18 @@
             @clear="handleQuery"
           />
 
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            clearable
+            style="width: 240px;"
+            @change="handleDateRangeChange"
+          />
+
           <el-button type="primary" class="toolbar-btn" @click="handleQuery">
             <el-icon><Search /></el-icon> 查询
           </el-button>
@@ -350,6 +362,8 @@ const playmateOnlineStatus = ref('1');
 // 模态框控制
 const createModalOpen = ref(false);
 
+const dateRange = ref([]);
+
 const queryParams = reactive({
   pageIndex: 1,
   pageSize: 10,
@@ -357,7 +371,9 @@ const queryParams = reactive({
   orderNo: undefined,
   orderType: undefined,
   status: undefined,
-  serviceType: undefined
+  serviceType: undefined,
+  beginTime: undefined,
+  endTime: undefined
 });
 
 function formatAmount(val) {
@@ -514,7 +530,9 @@ function doFetchList() {
     orderNo: queryParams.orderNo || undefined,
     orderType: queryParams.orderType || undefined,
     status: queryParams.status || undefined,
-    serviceType: queryParams.serviceType || undefined
+    serviceType: queryParams.serviceType || undefined,
+    beginTime: queryParams.beginTime || undefined,
+    endTime: queryParams.endTime || undefined
   };
 
   listOrder(req).then(res => {
@@ -540,11 +558,25 @@ function handleQuery() {
   getList();
 }
 
+function handleDateRangeChange(val) {
+  if (Array.isArray(val) && val.length === 2) {
+    queryParams.beginTime = val[0] + ' 00:00:00';
+    queryParams.endTime = val[1] + ' 23:59:59';
+  } else {
+    queryParams.beginTime = undefined;
+    queryParams.endTime = undefined;
+  }
+  handleQuery();
+}
+
 function resetQuery() {
   queryParams.orderNo = undefined;
   queryParams.orderType = undefined;
   queryParams.status = undefined;
   queryParams.serviceType = undefined;
+  queryParams.beginTime = undefined;
+  queryParams.endTime = undefined;
+  dateRange.value = [];
   activeTab.value = 'ALL';
   handleQuery();
 }
