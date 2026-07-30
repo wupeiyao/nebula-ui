@@ -29,6 +29,22 @@
           </el-tag>
         </div>
 
+        <el-button type="info" plain size="default" class="btn-customer-lib" @click="handleGoToCustomerList">
+          <el-icon class="mr-1"><User /></el-icon> 客户库
+        </el-button>
+
+        <el-button type="warning" plain size="default" class="btn-flow-lib" @click="handleGoToFlowList">
+          <el-icon class="mr-1"><Money /></el-icon> 我的流水
+        </el-button>
+
+        <el-button type="success" size="default" class="btn-batch-start" :loading="batchStartLoading" @click="handleBatchStartTimer">
+          <el-icon class="mr-1"><VideoPlay /></el-icon> 一键开始全部计时
+        </el-button>
+
+        <el-button type="danger" size="default" class="btn-batch-stop" :loading="batchStopLoading" @click="handleBatchStopTimer">
+          <el-icon class="mr-1"><VideoPause /></el-icon> 一键全部结束计时
+        </el-button>
+
         <el-button type="primary" size="default" class="btn-create-order" @click="handleOpenCreateModal">
           <el-icon class="mr-1"><Plus /></el-icon> 发起全新订单
         </el-button>
@@ -74,82 +90,6 @@
         <div class="kpi-content">
           <div class="kpi-value">{{ todayHours }} 小时</div>
           <div class="kpi-label">今日服务时长</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 主进行中订单高亮秒表卡片 (若有进行中的订单) -->
-    <div v-if="currentTimingOrder" class="hero-timer-card">
-      <div class="timer-card-header">
-        <div class="timer-badge-strip">
-          <el-tag :type="currentTimingOrder.rentalType === 'CARPOOL' ? 'warning' : 'danger'" effect="light" class="rental-badge">
-            {{ currentTimingOrder.rentalType === 'CARPOOL' ? '拼车模式 (多老板)' : '包车模式 (独享老板)' }}
-          </el-tag>
-          <span class="order-no-text">单号: {{ currentTimingOrder.orderNo }}</span>
-          <el-tag type="primary" effect="plain">服务项目: {{ currentTimingOrder.serviceType }}</el-tag>
-        </div>
-        <div class="timer-status-pulse">
-          <span class="pulse-dot"></span> 实时服务中
-        </div>
-      </div>
-
-      <div class="timer-main-body">
-        <div class="stopwatch-display">
-          <div class="clock-icon-anim"><el-icon><Timer /></el-icon></div>
-          <div class="ticker-text">{{ liveTickerText }}</div>
-        </div>
-
-        <div class="timer-meta-box">
-          <div class="meta-item">
-            <span class="meta-lbl">已扣费时长:</span>
-            <span class="meta-val text-primary">{{ currentTimingOrder.billedHours || 1 }} 小时</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-lbl">预计每小时扣额:</span>
-            <span class="meta-val text-warning">￥{{ formatAmount(currentTimingOrder.hourlyRate) }}/小时</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-lbl">开始时间:</span>
-            <span class="meta-val">{{ currentTimingOrder.startTime || '刚开始' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 参与人员展示与操作 -->
-      <div class="timer-bottom-bar">
-        <div class="participants-bar">
-          <div class="part-group">
-            <span class="part-lbl">老板列表:</span>
-            <template v-if="currentTimingOrder.customers && currentTimingOrder.customers.length">
-              <el-tag v-for="c in currentTimingOrder.customers" :key="c.id" type="info" effect="light" class="user-pill">
-                {{ c.customerUser?.nickname || c.customerUser?.username || c.customerId }}
-                (￥{{ formatAmount(c.hourlyRate) }}/h)
-              </el-tag>
-            </template>
-            <span v-else class="part-val-none">主老板 ({{ currentTimingOrder.customerUser?.nickname || currentTimingOrder.customerId }})</span>
-          </div>
-
-          <div class="part-group">
-            <span class="part-lbl">陪玩同行:</span>
-            <template v-if="currentTimingOrder.playmates && currentTimingOrder.playmates.length">
-              <el-tag v-for="p in currentTimingOrder.playmates" :key="p.id" type="success" effect="light" class="user-pill">
-                {{ p.playmateUser?.nickname || p.playmateUser?.username || p.playmateId }}
-              </el-tag>
-            </template>
-            <span v-else class="part-val-none">-</span>
-          </div>
-        </div>
-
-        <div class="timer-actions">
-          <el-button
-            type="danger"
-            size="default"
-            class="btn-stop-timer"
-            :loading="stopLoading"
-            @click="handleStopTimer(currentTimingOrder)"
-          >
-            <el-icon class="mr-1"><VideoPause /></el-icon> 结束计时并完成结算
-          </el-button>
         </div>
       </div>
     </div>
@@ -264,9 +204,26 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="已扣时长/收益" width="140" align="center">
+          <el-table-column label="实时计时" width="130" align="center">
             <template #default="scope">
-              <span>{{ scope.row.billedHours || 0 }}h / ￥{{ formatAmount(scope.row.totalAmount) }}</span>
+              <template v-if="scope.row.status === 'IN_SERVICE'">
+                <el-tag type="danger" effect="light" class="live-timer-tag">
+                  <span class="pulse-dot-small"></span>
+                  <span class="font-mono font-bold">{{ getTimingDurationText(scope.row) }}</span>
+                </el-tag>
+              </template>
+              <template v-else-if="scope.row.status === 'COMPLETED'">
+                <span class="text-muted">{{ scope.row.serviceHours !== undefined && scope.row.serviceHours !== null ? scope.row.serviceHours + 'h' : (scope.row.billedHours ? scope.row.billedHours + 'h' : '-') }}</span>
+              </template>
+              <template v-else>
+                <span class="text-muted">-</span>
+              </template>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="服务时长/收益" width="140" align="center">
+            <template #default="scope">
+              <span>{{ scope.row.serviceHours !== undefined && scope.row.serviceHours !== null ? scope.row.serviceHours : (scope.row.billedHours || 0) }}h / ￥{{ formatAmount(scope.row.totalAmount) }}</span>
             </template>
           </el-table-column>
 
@@ -345,15 +302,31 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
-import { Plus, Timer, Money, User, Clock, VideoPause, Monitor, Search, RefreshRight } from '@element-plus/icons-vue';
+import { useRouter } from 'vue-router';
+import { Plus, Timer, Money, User, Clock, VideoPlay, VideoPause, Monitor, Search, RefreshRight } from '@element-plus/icons-vue';
 import { listOrder, startTimingOrder, stopTimingOrder } from '../../../api/business/order.js';
 import { getUserInfo } from '../../../api/auth/auth.js';
 import { getPlaymate } from '../../../api/business/playmate.js';
 import PlaymateAppOrderDialog from './component/PlaymateAppOrderDialog.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
+const router = useRouter();
 const loading = ref(false);
+
+function handleGoToCustomerList() {
+  router.push('/business/playmateApp/customer').catch(() => {
+    router.push('/business/playmateCustomer');
+  });
+}
+
+function handleGoToFlowList() {
+  router.push('/business/playmateApp/flow').catch(() => {
+    router.push('/business/playmateFlow');
+  });
+}
 const stopLoading = ref(false);
+const batchStartLoading = ref(false);
+const batchStopLoading = ref(false);
 const orderList = ref([]);
 const total = ref(0);
 const activeTab = ref('ALL');
@@ -367,9 +340,8 @@ const todayEstimateIncome = ref(0);
 const totalBossesCount = ref(0);
 const todayHours = ref(0);
 
-// 进行中秒表关联
-const currentTimingOrder = ref(null);
-const liveTickerText = ref('00:00:00');
+// 动态计时 tick
+const nowTime = ref(Date.now());
 let timerInterval = null;
 
 // 陪玩当前在线状态
@@ -401,19 +373,16 @@ function formatSecondsToHMS(totalSec) {
   return [h, m, s].map(v => (v < 10 ? '0' + v : String(v))).join(':');
 }
 
-/** 启动秒表定时器 */
-function startLiveTimerTicker() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (!currentTimingOrder.value || !currentTimingOrder.value.startTime) {
-      liveTickerText.value = '00:00:00';
-      return;
-    }
-    const startMs = new Date(currentTimingOrder.value.startTime).getTime();
-    const nowMs = new Date().getTime();
-    const diffSec = Math.max(0, Math.floor((nowMs - startMs) / 1000));
-    liveTickerText.value = formatSecondsToHMS(diffSec);
-  }, 1000);
+/** 计算单条订单实时已计时时长 */
+function getTimingDurationText(row) {
+  if (row.status === 'IN_SERVICE') {
+    if (!row.startTime) return '00:00:00';
+    const startMs = new Date(row.startTime).getTime();
+    if (isNaN(startMs)) return '00:00:00';
+    const diffSec = Math.max(0, Math.floor((nowTime.value - startMs) / 1000));
+    return formatSecondsToHMS(diffSec);
+  }
+  return '-';
 }
 
 /** 初始化获取当前登录陪玩的身份及在线状态 */
@@ -435,25 +404,62 @@ function initCurrentPlaymate() {
   }).catch(() => null);
 }
 
-/** 独立查询当前正处于 IN_SERVICE 状态的订单 (不受表格选项卡 Tab 筛选影响) */
-function loadCurrentTimingOrder() {
-  if (!currentPlaymateId.value) return;
-  listOrder({
-    playmateId: currentPlaymateId.value,
-    statusStr: 'IN_SERVICE',
-    pageIndex: 1,
-    pageSize: 1
-  }).then(res => {
-    const resData = res.result || res.data || res;
-    const records = resData.records || resData.list || [];
-    if (records.length > 0) {
-      currentTimingOrder.value = records[0];
-      startLiveTimerTicker();
-    } else {
-      currentTimingOrder.value = null;
-      if (timerInterval) clearInterval(timerInterval);
+/** 计算陪玩实际净服务时长 (合并同一时间段/拼车多订单的重叠时长) */
+function calculateNetServiceHours(orders) {
+  if (!orders || orders.length === 0) return 0;
+  const intervals = [];
+  let fallbackHours = 0;
+
+  orders.forEach(o => {
+    if (o.status !== 'IN_SERVICE' && o.status !== 'COMPLETED') return;
+
+    let startMs = o.startTime ? new Date(o.startTime).getTime() : null;
+    let endMs = o.endTime ? new Date(o.endTime).getTime() : null;
+
+    if (startMs && !isNaN(startMs)) {
+      if (!endMs || isNaN(endMs)) {
+        if (o.status === 'IN_SERVICE') {
+          endMs = Date.now();
+        } else if (o.serviceHours) {
+          endMs = startMs + Math.round(Number(o.serviceHours) * 3600 * 1000);
+        } else {
+          endMs = startMs;
+        }
+      }
+      if (endMs > startMs) {
+        intervals.push([startMs, endMs]);
+        return;
+      }
     }
-  }).catch(() => {});
+
+    if (o.serviceHours && Number(o.serviceHours) > 0) {
+      fallbackHours += Number(o.serviceHours);
+    }
+  });
+
+  if (intervals.length === 0) {
+    return fallbackHours;
+  }
+
+  intervals.sort((a, b) => a[0] - b[0]);
+
+  const merged = [intervals[0]];
+  for (let i = 1; i < intervals.length; i++) {
+    const prev = merged[merged.length - 1];
+    const curr = intervals[i];
+    if (curr[0] <= prev[1]) {
+      prev[1] = Math.max(prev[1], curr[1]);
+    } else {
+      merged.push(curr);
+    }
+  }
+
+  let totalMs = 0;
+  merged.forEach(([start, end]) => {
+    totalMs += (end - start);
+  });
+
+  return (totalMs / (1000 * 3600)) + fallbackHours;
 }
 
 /** 独立计算当前陪玩的总体 KPI 统计数据 (不受表格选项卡 Tab 筛选及分页影响) */
@@ -470,11 +476,9 @@ function calculateKPIStats() {
     activeOrdersCount.value = allOrders.filter(o => o.status === 'IN_SERVICE').length;
     let income = 0;
     let bossesSet = new Set();
-    let hours = 0;
 
     allOrders.forEach(o => {
       if (o.totalAmount) income += Number(o.totalAmount);
-      if (o.serviceHours) hours += Number(o.serviceHours);
       if (o.customers && o.customers.length) {
         o.customers.forEach(c => bossesSet.add(c.customerId));
       } else if (o.customerId) {
@@ -484,7 +488,9 @@ function calculateKPIStats() {
 
     todayEstimateIncome.value = income;
     totalBossesCount.value = bossesSet.size;
-    todayHours.value = hours.toFixed(1);
+
+    const netHours = calculateNetServiceHours(allOrders);
+    todayHours.value = netHours.toFixed(1);
   }).catch(() => {});
 }
 
@@ -525,7 +531,6 @@ function doFetchList() {
 async function refreshAllData() {
   loading.value = true;
   await initCurrentPlaymate();
-  loadCurrentTimingOrder();
   calculateKPIStats();
   doFetchList();
 }
@@ -601,6 +606,74 @@ function handleStopTimer(order) {
   }).catch(() => {});
 }
 
+/** 一键开始全部待计时订单 */
+async function handleBatchStartTimer() {
+  if (!currentPlaymateId.value) return;
+  try {
+    const res = await listOrder({ playmateId: currentPlaymateId.value, pageSize: 100 });
+    const resData = res.result || res.data || res;
+    const allOrders = resData.records || resData.list || [];
+    const waitingOrders = allOrders.filter(o => ['WAITING_START', 'CREATED', 'UNPAID', 'PAID'].includes(o.status));
+    
+    if (waitingOrders.length === 0) {
+      ElMessage.warning('当前没有需要开始计时的订单');
+      return;
+    }
+    
+    await ElMessageBox.confirm(`确定要为所有未计时订单（共 ${waitingOrders.length} 笔）一键开始计时吗？开始后在线状态将更新为【忙碌中】。`, '一键开始计时确认', {
+      confirmButtonText: '一键开始',
+      cancelButtonText: '取消',
+      type: 'success'
+    });
+
+    batchStartLoading.value = true;
+    const promises = waitingOrders.map(o => startTimingOrder(o.id));
+    await Promise.all(promises);
+    ElMessage.success(`已成功为 ${waitingOrders.length} 笔订单开始计时！`);
+    refreshAllData();
+  } catch (err) {
+    if (err !== 'cancel') {
+      ElMessage.error(err?.message || '一键开始计时操作失败');
+    }
+  } finally {
+    batchStartLoading.value = false;
+  }
+}
+
+/** 一键结束全部进行中订单 */
+async function handleBatchStopTimer() {
+  if (!currentPlaymateId.value) return;
+  try {
+    const res = await listOrder({ playmateId: currentPlaymateId.value, pageSize: 100 });
+    const resData = res.result || res.data || res;
+    const allOrders = resData.records || resData.list || [];
+    const inServiceOrders = allOrders.filter(o => o.status === 'IN_SERVICE');
+    
+    if (inServiceOrders.length === 0) {
+      ElMessage.warning('当前没有正在计时的订单');
+      return;
+    }
+    
+    await ElMessageBox.confirm(`确定要将所有进行中的订单（共 ${inServiceOrders.length} 笔）一键结束计时并完成结算吗？`, '一键结束计时确认', {
+      confirmButtonText: '一键结束结算',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+
+    batchStopLoading.value = true;
+    const promises = inServiceOrders.map(o => stopTimingOrder(o.id));
+    await Promise.all(promises);
+    ElMessage.success(`已成功结束 ${inServiceOrders.length} 笔订单的计时并完成结算！`);
+    refreshAllData();
+  } catch (err) {
+    if (err !== 'cancel') {
+      ElMessage.error(err?.message || '一键结束计时操作失败');
+    }
+  } finally {
+    batchStopLoading.value = false;
+  }
+}
+
 function handleViewDetail(order) {
   ElMessageBox.alert(`
     <div style="text-align:left; font-size:14px; line-height:1.8;">
@@ -608,7 +681,7 @@ function handleViewDetail(order) {
       <p><b>服务类型：</b>${order.serviceType}</p>
       <p><b>模式：</b>${order.rentalType === 'CARPOOL' ? '拼车' : '包车'}</p>
       <p><b>每小时单价：</b>￥${formatAmount(order.hourlyRate)}</p>
-      <p><b>已扣小时数：</b>${order.billedHours || 0} 小时</p>
+      <p><b>服务时长/已扣小时数：</b>${order.serviceHours !== undefined && order.serviceHours !== null ? order.serviceHours : (order.billedHours || 0)} 小时</p>
       <p><b>状态：</b>${getStatusLabel(order.status)}</p>
       <p><b>备注：</b>${order.remark || '无'}</p>
     </div>
@@ -650,6 +723,10 @@ function getStatusLabel(status) {
 
 onMounted(() => {
   refreshAllData();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    nowTime.value = Date.now();
+  }, 1000);
 });
 
 onUnmounted(() => {
@@ -803,169 +880,19 @@ onUnmounted(() => {
   margin-top: 4px;
 }
 
-/* 秒表 HERO 卡片 - 白色简约风 */
-.hero-timer-card {
-  flex-shrink: 0;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px 20px;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.timer-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.timer-badge-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.rental-badge {
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.order-no-text {
-  font-family: monospace;
-  font-size: 14px;
-  color: #475569;
-  font-weight: 600;
-}
-
-.timer-status-pulse {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #16a34a;
-  font-weight: 700;
-}
-
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #16a34a;
-  animation: pulse-ring 1.5s infinite;
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
-}
-
-.timer-main-body {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  border-radius: 10px;
-  padding: 12px 18px;
-}
-
-.stopwatch-display {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.clock-icon-anim {
-  font-size: 34px;
-  color: #0284c7;
-  animation: spin-slow 8s linear infinite;
-}
-
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.ticker-text {
-  font-family: "Courier New", Courier, monospace;
-  font-size: 36px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: #0284c7;
-}
-
-.timer-meta-box {
-  display: flex;
-  gap: 24px;
-  background: #ffffff;
-  padding: 8px 16px;
+.btn-batch-start,
+.btn-batch-stop {
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-}
-
-.meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.meta-lbl {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.meta-val {
-  font-weight: 700;
-  font-size: 14px;
-  color: #0f172a;
-}
-
-.timer-bottom-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 8px 14px;
-  border: 1px solid #f1f5f9;
-}
-
-.participants-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.part-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.part-lbl {
-  font-size: 12px;
-  color: #475569;
   font-weight: 600;
+  padding: 10px 16px;
 }
 
-.part-val-none {
-  font-size: 12px;
-  color: #94a3b8;
+.btn-batch-start {
+  box-shadow: 0 4px 12px rgba(103, 194, 58, 0.25);
 }
 
-.user-pill {
-  border-radius: 4px;
-}
-
-.btn-stop-timer {
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+.btn-batch-stop {
+  box-shadow: 0 4px 12px rgba(245, 108, 108, 0.25);
 }
 
 /* 订单表格区 */
@@ -1160,6 +1087,29 @@ onUnmounted(() => {
 .text-warning { color: #e6a23c; }
 .text-muted { color: #909399; }
 .font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
 .font-mono { font-family: monospace; }
 .mr-1 { margin-right: 4px; }
+
+.live-timer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  padding: 0 8px;
+}
+
+.pulse-dot-small {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #f56c6c;
+  animation: pulse-ring-small 1.5s infinite;
+}
+
+@keyframes pulse-ring-small {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 108, 108, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(245, 108, 108, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 108, 108, 0); }
+}
 </style>

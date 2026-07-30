@@ -17,3 +17,12 @@ export function getFundStatistics(query) {
     params: query
   })
 }
+
+// 获取个人资金流水汇总统计指标 (受时间与筛选条件控制)
+export function getFundFlowSummary(query) {
+  return request({
+    url: '/business/fund-flow/summary',
+    method: 'get',
+    params: query
+  })
+}

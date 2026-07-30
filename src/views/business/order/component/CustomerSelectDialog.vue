@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="选择老板/客户"
-    width="800px"
+    width="1000px"
     append-to-body
     destroy-on-close
     class="custom-dialog"

@@ -36,15 +36,15 @@
           <!-- 头部标题 -->
           <div class="form-header">
             <h1 class="brand-title">
-              {{ activeTab === 'login' ? '涛涛电竞一体化运营平台' : '创建客户账号' }}
+              {{ activeTab === 'login' ? '涛涛电竞一体化运营平台' : '' }}
             </h1>
             <p class="brand-subtitle">
               <template v-if="activeTab === 'login'">
                 登入专属账号，连接游戏世界 <span class="sparkle-emoji">🎮</span>
               </template>
-              <template v-else>
-                仅限注册【客户】角色，邮箱验证安全开启 <span class="sparkle-emoji">✉️</span>
-              </template>
+<!--              <template v-else>-->
+<!--                仅限注册【客户】角色，邮箱验证安全开启 <span class="sparkle-emoji">✉️</span>-->
+<!--              </template>-->
             </p>
           </div>
 
@@ -141,11 +141,11 @@
             @keyup.enter.prevent="handleRegister"
           >
             <!-- 角色固定提示 -->
-            <div class="role-badge-tip">
-              <el-tag type="success" effect="light" class="role-tag">
-                <el-icon class="tag-icon"><User /></el-icon> 账户身份：客户角色（已固定）
-              </el-tag>
-            </div>
+<!--            <div class="role-badge-tip">-->
+<!--              <el-tag type="success" effect="light" class="role-tag">-->
+<!--                <el-icon class="tag-icon"><User /></el-icon> 账户身份：客户角色（已固定）-->
+<!--              </el-tag>-->
+<!--            </div>-->
 
             <!-- 用户名 -->
             <el-form-item label="用户名" prop="username">
@@ -213,25 +213,25 @@
               />
             </el-form-item>
 
-            <!-- 手机号 (选填) -->
-            <el-form-item label="手机号码 (选填)" prop="mobile">
-              <el-input
-                v-model="registerForm.mobile"
-                placeholder="请输入手机号码"
-                :prefix-icon="Iphone"
-                class="custom-input"
-              />
-            </el-form-item>
+<!--            &lt;!&ndash; 手机号 (选填) &ndash;&gt;-->
+<!--            <el-form-item label="手机号码 (选填)" prop="mobile">-->
+<!--              <el-input-->
+<!--                v-model="registerForm.mobile"-->
+<!--                placeholder="请输入手机号码"-->
+<!--                :prefix-icon="Iphone"-->
+<!--                class="custom-input"-->
+<!--              />-->
+<!--            </el-form-item>-->
 
-            <!-- 昵称 (选填) -->
-            <el-form-item label="用户昵称 (选填)" prop="nickname">
-              <el-input
-                v-model="registerForm.nickname"
-                placeholder="设置对外展示昵称，默认与用户名一致"
-                :prefix-icon="UserFilled"
-                class="custom-input"
-              />
-            </el-form-item>
+<!--            &lt;!&ndash; 昵称 (选填) &ndash;&gt;-->
+<!--            <el-form-item label="用户昵称 (选填)" prop="nickname">-->
+<!--              <el-input-->
+<!--                v-model="registerForm.nickname"-->
+<!--                placeholder="设置对外展示昵称，默认与用户名一致"-->
+<!--                :prefix-icon="UserFilled"-->
+<!--                class="custom-input"-->
+<!--              />-->
+<!--            </el-form-item>-->
 
             <!-- 图形验证码 (后端开启时展示) -->
             <el-form-item v-if="showCaptcha" label="图形验证码" prop="captchaCode">

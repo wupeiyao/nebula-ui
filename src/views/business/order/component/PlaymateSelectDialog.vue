@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="挑选陪玩人员"
-    width="850px"
+    width="1000px"
     append-to-body
     destroy-on-close
     class="custom-dialog"
@@ -59,11 +59,11 @@
 
         <el-table-column prop="games" label="擅长游戏" min-width="140" align="center" :show-overflow-tooltip="true" />
 
-        <el-table-column prop="pricePerOrder" label="接单价格" width="110" align="center">
-          <template #default="scope">
-            <span class="price-text">￥{{ scope.row.pricePerOrder || '0.00' }}</span>
-          </template>
-        </el-table-column>
+<!--        <el-table-column prop="pricePerOrder" label="接单价格" width="110" align="center">-->
+<!--          <template #default="scope">-->
+<!--            <span class="price-text">￥{{ scope.row.pricePerOrder || '0.00' }}</span>-->
+<!--          </template>-->
+<!--        </el-table-column>-->
 
         <el-table-column prop="onlineStatus" label="状态" width="90" align="center">
           <template #default="scope">

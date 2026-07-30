@@ -251,7 +251,7 @@
 
           <el-table-column label="已扣时长/消费" width="140" align="center">
             <template #default="scope">
-              <span>{{ scope.row.billedHours || 0 }}h / ￥{{ formatAmount(scope.row.totalAmount) }}</span>
+              <span>{{ scope.row.serviceHours !== undefined && scope.row.serviceHours !== null ? scope.row.serviceHours : (scope.row.billedHours || 0) }}h / ￥{{ formatAmount(scope.row.totalAmount) }}</span>
             </template>
           </el-table-column>
 
@@ -610,7 +610,7 @@ function handleViewDetail(order) {
       <p><b>模式：</b>${order.rentalType === 'CARPOOL' ? '拼车' : '包车'}</p>
       <p><b>同行陪玩：</b>${playmatesStr}</p>
       <p><b>每小时单价：</b>￥${formatAmount(order.hourlyRate)}</p>
-      <p><b>已扣小时数/已消费：</b>${order.billedHours || 0} 小时 / ￥${formatAmount(order.totalAmount)}</p>
+      <p><b>已扣小时数/已消费：</b>${order.serviceHours !== undefined && order.serviceHours !== null ? order.serviceHours : (order.billedHours || 0)} 小时 / ￥${formatAmount(order.totalAmount)}</p>
       <p><b>订单状态：</b>${getStatusLabel(order.status)}</p>
       <p><b>创建时间：</b>${order.createTime || '-'}</p>
       <p><b>备注：</b>${order.remark || '无'}</p>
@@ -843,14 +843,15 @@ onUnmounted(() => {
   margin-top: 4px;
 }
 
-/* Hero 秒表卡片 */
+/* Hero 秒表卡片 - 简约白色风格 */
 .hero-timer-card {
   flex-shrink: 0;
-  background: linear-gradient(135deg, #1e2638 0%, #0d111a 100%);
+  background: #ffffff;
+  border: 1px solid #ebeef5;
   border-radius: 14px;
   padding: 20px 24px;
-  color: #ffffff;
-  box-shadow: 0 8px 24px rgba(13, 17, 26, 0.25);
+  color: #303133;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -873,7 +874,7 @@ onUnmounted(() => {
 .order-no-text {
   font-family: monospace;
   font-size: 14px;
-  color: #a0aec0;
+  color: #606266;
 }
 
 .timer-status-pulse {
@@ -881,23 +882,23 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #68d391;
+  color: #67c23a;
   font-weight: 600;
 }
 
 .pulse-dot {
   width: 10px;
   height: 10px;
-  background-color: #68d391;
+  background-color: #67c23a;
   border-radius: 50%;
-  box-shadow: 0 0 0 rgba(104, 211, 145, 0.4);
+  box-shadow: 0 0 0 rgba(103, 194, 58, 0.4);
   animation: pulse-ring 1.5s infinite;
 }
 
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(104, 211, 145, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(104, 211, 145, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(104, 211, 145, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(103, 194, 58, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(103, 194, 58, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(103, 194, 58, 0); }
 }
 
 .timer-main-body {
@@ -930,13 +931,13 @@ onUnmounted(() => {
   font-weight: 900;
   letter-spacing: 2px;
   color: #67c23a;
-  text-shadow: 0 0 12px rgba(103, 194, 58, 0.4);
 }
 
 .timer-meta-box {
   display: flex;
   gap: 24px;
-  background: rgba(255, 255, 255, 0.06);
+  background: #f8fafc;
+  border: 1px solid #ebeef5;
   padding: 12px 20px;
   border-radius: 10px;
 }
@@ -949,19 +950,20 @@ onUnmounted(() => {
 
 .meta-lbl {
   font-size: 12px;
-  color: #a0aec0;
+  color: #909399;
 }
 
 .meta-val {
   font-size: 15px;
   font-weight: 700;
+  color: #303133;
 }
 
 .timer-bottom-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #f0f2f5;
   padding-top: 14px;
 }
 
@@ -979,7 +981,7 @@ onUnmounted(() => {
 
 .part-lbl {
   font-size: 13px;
-  color: #cbd5e0;
+  color: #606266;
 }
 
 .user-pill {
@@ -988,7 +990,7 @@ onUnmounted(() => {
 
 .timer-info-hint {
   font-size: 12px;
-  color: #a0aec0;
+  color: #909399;
   display: flex;
   align-items: center;
 }

@@ -92,6 +92,30 @@ const routes = [
         meta: { title: '个人中心', requiresAuth: true }
       },
       {
+        path: '/business/playmateApp/customer',
+        name: 'PlaymateCustomerApp',
+        component: () => import('../views/business/playmateApp/customer.vue'),
+        meta: { title: '老板客户库', requiresAuth: true }
+      },
+      {
+        path: '/business/playmateCustomer',
+        name: 'PlaymateCustomerMenu',
+        component: () => import('../views/business/playmateApp/customer.vue'),
+        meta: { title: '老板客户库', requiresAuth: true }
+      },
+      {
+        path: '/business/playmateApp/flow',
+        name: 'PlaymateFlowApp',
+        component: () => import('../views/business/playmateApp/Flow.vue'),
+        meta: { title: '我的收益与流水', requiresAuth: true }
+      },
+      {
+        path: '/business/playmateFlow',
+        name: 'PlaymateFlowMenu',
+        component: () => import('../views/business/playmateApp/Flow.vue'),
+        meta: { title: '我的收益与流水', requiresAuth: true }
+      },
+      {
         path: '/redirect/:path(.*)*',
         component: () => import('../views/redirect/index.vue'),
         meta: { requiresAuth: true }
