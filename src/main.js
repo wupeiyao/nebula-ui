@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import ElementPlus from 'element-plus';
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import 'element-plus/dist/index.css';
 
 // 引入重置/全局 CSS
@@ -14,7 +15,9 @@ const pinia = createPinia();
 
 app.use(pinia);
 app.use(router);
-app.use(ElementPlus);
+app.use(ElementPlus, {
+  locale: zhCn,
+});
 
 // 注册全局按钮权限指令与全局方法
 app.directive('hasPermi', hasPermi);

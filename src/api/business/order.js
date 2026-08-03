@@ -85,3 +85,12 @@ export function refundOrder(id, data) {
   });
 }
 
+// 查询陪玩服务时长统计 (指定时间段)
+export function getPlaymateHoursStat(params) {
+  return request({
+    url: '/business/order/stat-hours',
+    method: 'get',
+    params: params
+  });
+}
+

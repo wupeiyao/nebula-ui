@@ -51,45 +51,94 @@
       </div>
     </div>
 
-    <!-- KPI 数据统计栏 -->
-    <div class="kpi-cards-grid">
-      <div class="kpi-card stat-active">
-        <div class="kpi-icon-wrapper icon-active">
-          <el-icon><Timer /></el-icon>
+    <!-- 统一 KPI 数据统计区 (包含统一时间段过滤器) -->
+    <div class="kpi-section-container">
+      <div class="kpi-header-filter-bar">
+        <div class="filter-bar-left">
+          <div class="kpi-header-title">
+            <el-icon class="title-icon"><DataAnalysis /></el-icon>
+            <span>陪玩工作台概览</span>
+          </div>
+          <el-tag type="success" effect="light" class="kpi-period-chip">
+            <span class="pulse-dot-green"></span>
+            统计时段：{{ periodTagText }}
+          </el-tag>
         </div>
-        <div class="kpi-content">
-          <div class="kpi-value">{{ activeOrdersCount }}</div>
-          <div class="kpi-label">进行中/计时订单</div>
+
+        <div class="filter-bar-right">
+          <span class="filter-label">时间过滤：</span>
+          <el-date-picker
+            v-model="kpiDateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            size="default"
+            :shortcuts="dateShortcuts"
+            class="kpi-unified-date-picker"
+            @change="handleKPIDateRangeChange"
+          />
         </div>
       </div>
 
-      <div class="kpi-card stat-income">
-        <div class="kpi-icon-wrapper icon-income">
-          <el-icon><Money /></el-icon>
+      <!-- 3 个核心 KPI 统计卡片网格 -->
+      <div class="kpi-cards-grid-3">
+        <!-- 卡片 1: 服务订单数 -->
+        <div class="kpi-card stat-card-orders">
+          <div class="kpi-icon-wrapper icon-orders">
+            <el-icon><Timer /></el-icon>
+          </div>
+          <div class="kpi-content">
+            <div class="card-top-row">
+              <span class="kpi-label-title">{{ cardLabels.orders }}</span>
+              <el-tag v-if="activeOrdersCount > 0" size="small" type="danger" effect="light" class="live-active-tag">
+                <span class="pulse-dot-red"></span> {{ activeOrdersCount }} 笔进行中
+              </el-tag>
+            </div>
+            <div class="kpi-value-display">
+              <span class="val-num">{{ periodOrdersCount }}</span>
+              <span class="val-unit">单</span>
+            </div>
+          </div>
         </div>
-        <div class="kpi-content">
-          <div class="kpi-value">￥{{ formatAmount(todayEstimateIncome) }}</div>
-          <div class="kpi-label">今日预估收益</div>
-        </div>
-      </div>
 
-      <div class="kpi-card stat-boss">
-        <div class="kpi-icon-wrapper icon-boss">
-          <el-icon><User /></el-icon>
+        <!-- 卡片 2: 我的收益 -->
+        <div class="kpi-card stat-card-income">
+          <div class="kpi-icon-wrapper icon-income">
+            <el-icon><Money /></el-icon>
+          </div>
+          <div class="kpi-content">
+            <div class="card-top-row">
+              <span class="kpi-label-title">{{ cardLabels.income }}</span>
+              <el-tooltip content="已完成订单收益与进行中订单实时预估收益之和" placement="top">
+                <el-icon class="info-icon"><InfoFilled /></el-icon>
+              </el-tooltip>
+            </div>
+            <div class="kpi-value-display">
+              <span class="currency-symbol">￥</span>
+              <span class="val-num num-income">{{ formatAmount(periodIncome) }}</span>
+            </div>
+          </div>
         </div>
-        <div class="kpi-content">
-          <div class="kpi-value">{{ totalBossesCount }}</div>
-          <div class="kpi-label">关联老板人次</div>
-        </div>
-      </div>
 
-      <div class="kpi-card stat-hours">
-        <div class="kpi-icon-wrapper icon-hours">
-          <el-icon><Clock /></el-icon>
-        </div>
-        <div class="kpi-content">
-          <div class="kpi-value">{{ todayHours }} 小时</div>
-          <div class="kpi-label">今日服务时长</div>
+        <!-- 卡片 3: 工作时长 -->
+        <div class="kpi-card stat-card-hours">
+          <div class="kpi-icon-wrapper icon-hours">
+            <el-icon><Clock /></el-icon>
+          </div>
+          <div class="kpi-content">
+            <div class="card-top-row">
+              <span class="kpi-label-title">{{ cardLabels.hours }}</span>
+              <el-tooltip content="已由服务端与前端联合精准切分选中时段交集，并去除拼车/多订单重叠时段" placement="top">
+                <el-icon class="info-icon"><InfoFilled /></el-icon>
+              </el-tooltip>
+            </div>
+            <div class="kpi-value-display">
+              <span class="val-num num-hours">{{ hoursValue }}</span>
+              <span class="val-unit">小时</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -315,8 +364,8 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Timer, Money, User, Clock, VideoPlay, VideoPause, Monitor, Search, RefreshRight } from '@element-plus/icons-vue';
-import { listOrder, startTimingOrder, stopTimingOrder } from '../../../api/business/order.js';
+import { Plus, Timer, Money, User, Clock, VideoPlay, VideoPause, Monitor, Search, RefreshRight, InfoFilled, DataAnalysis } from '@element-plus/icons-vue';
+import { listOrder, startTimingOrder, stopTimingOrder, getPlaymateHoursStat } from '../../../api/business/order.js';
 import { getUserInfo } from '../../../api/auth/auth.js';
 import { getPlaymate } from '../../../api/business/playmate.js';
 import PlaymateAppOrderDialog from './component/PlaymateAppOrderDialog.vue';
@@ -346,11 +395,66 @@ const activeTab = ref('ALL');
 // 关联当前陪玩ID
 const currentPlaymateId = ref(null);
 
-// 统计数据
+function getTodayStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// 统一 KPI 时段筛选与 3 卡片统计 State
+const kpiDateRange = ref([getTodayStr(), getTodayStr()]);
+const periodTagText = ref(`今日 (${getTodayStr()})`);
+
 const activeOrdersCount = ref(0);
-const todayEstimateIncome = ref(0);
-const totalBossesCount = ref(0);
-const todayHours = ref(0);
+const periodOrdersCount = ref(0);
+const periodIncome = ref(0);
+const hoursValue = ref('0.0');
+
+const cardLabels = reactive({
+  orders: '今日服务订单',
+  income: '今日预估收益',
+  hours: '今日服务时长'
+});
+
+const cachedAllOrders = ref([]);
+
+const dateShortcuts = [
+  {
+    text: '今日',
+    value: () => {
+      const d = new Date();
+      return [d, d];
+    },
+  },
+  {
+    text: '昨日',
+    value: () => {
+      const start = new Date();
+      start.setDate(start.getDate() - 1);
+      return [start, start];
+    },
+  },
+  {
+    text: '近7天',
+    value: () => {
+      const start = new Date();
+      start.setDate(start.getDate() - 6);
+      const end = new Date();
+      return [start, end];
+    },
+  },
+  {
+    text: '本月',
+    value: () => {
+      const start = new Date();
+      start.setDate(1);
+      const end = new Date();
+      return [start, end];
+    },
+  },
+];
 
 // 动态计时 tick
 const nowTime = ref(Date.now());
@@ -420,8 +524,8 @@ function initCurrentPlaymate() {
   }).catch(() => null);
 }
 
-/** 计算陪玩实际净服务时长 (合并同一时间段/拼车多订单的重叠时长) */
-function calculateNetServiceHours(orders) {
+/** 计算陪玩实际净服务时长 (合并同一时间段/拼车多订单的重叠时长，可按指定 [rangeStartMs, rangeEndMs] 区间做精确交集切分) */
+function calculateNetServiceHours(orders, rangeStartMs, rangeEndMs) {
   if (!orders || orders.length === 0) return 0;
   const intervals = [];
   let fallbackHours = 0;
@@ -443,13 +547,29 @@ function calculateNetServiceHours(orders) {
         }
       }
       if (endMs > startMs) {
-        intervals.push([startMs, endMs]);
+        let effStart = startMs;
+        let effEnd = endMs;
+        if (rangeStartMs && !isNaN(rangeStartMs)) {
+          effStart = Math.max(effStart, rangeStartMs);
+        }
+        if (rangeEndMs && !isNaN(rangeEndMs)) {
+          effEnd = Math.min(effEnd, rangeEndMs);
+        }
+        if (effEnd > effStart) {
+          intervals.push([effStart, effEnd]);
+        }
         return;
       }
     }
 
     if (o.serviceHours && Number(o.serviceHours) > 0) {
-      fallbackHours += Number(o.serviceHours);
+      let cTime = o.createTime ? new Date(o.createTime).getTime() : null;
+      let inRange = true;
+      if (rangeStartMs && cTime && cTime < rangeStartMs) inRange = false;
+      if (rangeEndMs && cTime && cTime > rangeEndMs) inRange = false;
+      if (inRange) {
+        fallbackHours += Number(o.serviceHours);
+      }
     }
   });
 
@@ -478,6 +598,99 @@ function calculateNetServiceHours(orders) {
   return (totalMs / (1000 * 3600)) + fallbackHours;
 }
 
+/** 根据选定的统一日期区间计算 3 个 KPI 卡片指标（服务订单数、陪伴收益、工作时长） */
+function computeMetricsForDateRange() {
+  const allOrders = cachedAllOrders.value || [];
+  let beginTimeStr = undefined;
+  let endTimeStr = undefined;
+  let rangeStartMs = null;
+  let rangeEndMs = null;
+  const todayStr = getTodayStr();
+
+  let isToday = false;
+  let isCustom = false;
+
+  if (Array.isArray(kpiDateRange.value) && kpiDateRange.value.length === 2 && kpiDateRange.value[0] && kpiDateRange.value[1]) {
+    const startStr = kpiDateRange.value[0];
+    const endStr = kpiDateRange.value[1];
+
+    beginTimeStr = `${startStr} 00:00:00`;
+    endTimeStr = `${endStr} 23:59:59`;
+    rangeStartMs = new Date(beginTimeStr).getTime();
+    rangeEndMs = new Date(endTimeStr).getTime();
+
+    if (startStr === endStr && startStr === todayStr) {
+      isToday = true;
+      periodTagText.value = `今日 (${todayStr})`;
+    } else if (startStr === endStr) {
+      periodTagText.value = startStr;
+    } else {
+      isCustom = true;
+      periodTagText.value = `${startStr} 至 ${endStr}`;
+    }
+  } else {
+    periodTagText.value = '累计全量统计';
+  }
+
+  // 1. 过滤在选中时间段内的订单 (按创建时间/开始服务时间)
+  const rangeOrders = allOrders.filter(o => {
+    if (!rangeStartMs || !rangeEndMs) return true;
+    let timeMs = o.startTime ? new Date(o.startTime).getTime() : (o.createTime ? new Date(o.createTime).getTime() : null);
+    if (!timeMs) return true;
+    return timeMs >= rangeStartMs && timeMs <= rangeEndMs;
+  });
+
+  // 全局实时进行中订单数
+  activeOrdersCount.value = allOrders.filter(o => o.status === 'IN_SERVICE').length;
+
+  // 所选时间段服务订单总笔数
+  periodOrdersCount.value = rangeOrders.length;
+
+  // 所选时间段累计收益
+  let income = 0;
+  rangeOrders.forEach(o => {
+    if (o.totalAmount) income += Number(o.totalAmount);
+  });
+  periodIncome.value = income;
+
+  // 2. 所选时间段服务时长 (本地 0 延迟区间切分速算)
+  const localNetHours = calculateNetServiceHours(allOrders, rangeStartMs, rangeEndMs);
+  hoursValue.value = localNetHours.toFixed(1);
+
+  // 动态更新卡片标题
+  if (isToday) {
+    cardLabels.orders = '今日服务订单';
+    cardLabels.income = '今日预估收益';
+    cardLabels.hours = '今日服务时长';
+  } else if (isCustom) {
+    cardLabels.orders = '时段服务订单';
+    cardLabels.income = '时段累计收益';
+    cardLabels.hours = '时段服务时长';
+  } else {
+    cardLabels.orders = '累计服务订单';
+    cardLabels.income = '累计服务收益';
+    cardLabels.hours = '累计服务时长';
+  }
+
+  // 异步联动后端 API 获取服务端切分计算的精准结果
+  if (currentPlaymateId.value) {
+    getPlaymateHoursStat({
+      playmateId: currentPlaymateId.value,
+      beginTime: beginTimeStr,
+      endTime: endTimeStr
+    }).then(res => {
+      const resData = res.result || res.data || res;
+      if (resData && resData.serviceHours !== undefined) {
+        hoursValue.value = Number(resData.serviceHours).toFixed(1);
+      }
+    }).catch(() => {});
+  }
+}
+
+function handleKPIDateRangeChange() {
+  computeMetricsForDateRange();
+}
+
 /** 独立计算当前陪玩的总体 KPI 统计数据 (不受表格选项卡 Tab 筛选及分页影响) */
 function calculateKPIStats() {
   if (!currentPlaymateId.value) return;
@@ -488,25 +701,9 @@ function calculateKPIStats() {
   }).then(res => {
     const resData = res.result || res.data || res;
     const allOrders = resData.records || resData.list || [];
+    cachedAllOrders.value = allOrders;
 
-    activeOrdersCount.value = allOrders.filter(o => o.status === 'IN_SERVICE').length;
-    let income = 0;
-    let bossesSet = new Set();
-
-    allOrders.forEach(o => {
-      if (o.totalAmount) income += Number(o.totalAmount);
-      if (o.customers && o.customers.length) {
-        o.customers.forEach(c => bossesSet.add(c.customerId));
-      } else if (o.customerId) {
-        bossesSet.add(o.customerId);
-      }
-    });
-
-    todayEstimateIncome.value = income;
-    totalBossesCount.value = bossesSet.size;
-
-    const netHours = calculateNetServiceHours(allOrders);
-    todayHours.value = netHours.toFixed(1);
+    computeMetricsForDateRange();
   }).catch(() => {});
 }
 
@@ -860,56 +1057,189 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 
-/* KPI 统计卡片 */
-.kpi-cards-grid {
+/* KPI 统一统计区 */
+.kpi-section-container {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kpi-header-filter-bar {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.filter-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.kpi-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2f3d;
+}
+
+.kpi-header-title .title-icon {
+  font-size: 18px;
+  color: #409eff;
+}
+
+.kpi-period-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.pulse-dot-green {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #67c23a;
+  box-shadow: 0 0 6px rgba(103, 194, 58, 0.8);
+}
+
+.pulse-dot-red {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #f56c6c;
+  margin-right: 4px;
+}
+
+.filter-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 13px;
+  color: #606266;
+  font-weight: 600;
+}
+
+.kpi-unified-date-picker {
+  width: 240px !important;
+}
+
+/* 3 卡片网格布局 */
+.kpi-cards-grid-3 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
 .kpi-card {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 16px 20px;
+  border-radius: 14px;
+  padding: 18px 22px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(230, 235, 245, 0.8);
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .kpi-icon-wrapper {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 26px;
+  flex-shrink: 0;
 }
 
-.icon-active { background: #ecf5ff; color: #409eff; }
+.icon-orders { background: #ecf5ff; color: #409eff; }
 .icon-income { background: #fef0f0; color: #f56c6c; }
-.icon-boss { background: #fdf6ec; color: #e6a23c; }
-.icon-hours { background: #f0f9eb; color: #67c23a; }
+.icon-hours { background: #eef9e8; color: #67c23a; }
 
-.kpi-value {
-  font-size: 22px;
+.kpi-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-label-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #909399;
+}
+
+.info-icon {
+  font-size: 14px;
+  color: #c0c4cc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.info-icon:hover {
+  color: #409eff;
+}
+
+.kpi-value-display {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.currency-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f56c6c;
+  margin-right: 2px;
+}
+
+.val-num {
+  font-size: 26px;
   font-weight: 800;
   color: #1f2f3d;
-  line-height: 1.2;
+  line-height: 1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.kpi-label {
+.num-income {
+  color: #f56c6c;
+}
+
+.num-hours {
+  color: #2c3e50;
+}
+
+.val-unit {
   font-size: 13px;
-  color: #909399;
-  margin-top: 4px;
+  font-weight: 600;
+  color: #606266;
+  margin-left: 4px;
 }
 
 .btn-batch-start,

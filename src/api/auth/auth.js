@@ -73,15 +73,39 @@ export function getUserInfo() {
 }
 
 /**
- * 客户账户自主注册
+ * 客户账户自主注册 (使用国密 SM2 加密传输)
  * @param {Object} data 注册表单数据
  * @returns {Promise} CommonResponse<Boolean>
  */
 export function register(data) {
+  // 1. 构建注册安全请求数据结构，附带防重放标识
+  const registerRequest = {
+    username: data.username,
+    password: data.password,
+    confirmPassword: data.confirmPassword,
+    email: data.email,
+    emailCode: data.emailCode,
+    mobile: data.mobile,
+    nickname: data.nickname,
+    captchaCode: data.captchaCode,
+    uuid: data.uuid,
+    timestamp: Date.now(),
+    nonce: generateNonce()
+  };
+
+  // 2. 将整个请求对象序列化为 JSON 字符串并进行国密 SM2 公钥加密
+  const jsonStr = JSON.stringify(registerRequest);
+  const encryptedData = encryptSM2(jsonStr);
+
+  // 3. 构建发送给后端的 payload，只携带加密串 registerEncrypt
+  const payload = {
+    registerEncrypt: encryptedData
+  };
+
   return request({
     url: '/authorize/register',
     method: 'post',
-    data
+    data: payload
   });
 }
 

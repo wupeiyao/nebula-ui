@@ -10,7 +10,7 @@
               <el-icon v-else class="preview-logo-icon"><Platform /></el-icon>
             </div>
             <div class="preview-info">
-              <h2 class="preview-title">{{ form.sysName || '涛涛电竞一体化运营平台' }}</h2>
+              <h2 class="preview-title">{{ form.sysName || '涛涛电竞游戏陪玩平台' }}</h2>
               <div class="preview-tags">
                 <el-tag size="large" type="primary" effect="dark">{{ form.sysVersion || 'v1.0.0' }}</el-tag>
                 <el-tag v-if="form.maintenanceMode === '1'" size="large" type="danger" effect="dark">维护模式中</el-tag>

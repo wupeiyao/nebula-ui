@@ -36,7 +36,7 @@
           <!-- 头部标题 -->
           <div class="form-header">
             <h1 class="brand-title">
-              {{ activeTab === 'login' ? '涛涛电竞一体化运营平台' : '' }}
+              {{ activeTab === 'login' ? '涛涛电竞游戏陪玩平台' : '' }}
             </h1>
             <p class="brand-subtitle">
               <template v-if="activeTab === 'login'">
@@ -151,7 +151,7 @@
             <el-form-item label="用户名" prop="username">
               <el-input
                 v-model="registerForm.username"
-                placeholder="设置用户名 (3-20位)"
+                placeholder="设置用户名 (3-12位)"
                 :prefix-icon="User"
                 class="custom-input"
               />
@@ -354,7 +354,17 @@ const loginRules = {
 const registerRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度需在 3 到 20 位之间', trigger: 'blur' }
+    { min: 3, max: 12, message: '用户名长度需在 3 到 12 位之间', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value && /[\u4e00-\u9fa5]/.test(value)) {
+          callback(new Error('不能输入中文'));
+        } else {
+          callback();
+        }
+      },
+      trigger: ['blur', 'change']
+    }
   ],
   email: [
     { required: true, message: '请输入电子邮箱', trigger: 'blur' },
@@ -438,7 +448,7 @@ const handleSendEmailCode = async () => {
   try {
     await sendEmailCode(registerForm.value.email);
     ElMessage.success('验证码已发送至您的邮箱，请查收！');
-    
+
     countdown.value = 60;
     countdownStarted.value = true;
     if (timer) clearInterval(timer);
@@ -483,7 +493,7 @@ const handleLogin = () => {
       const targetPath = route.query.redirect && route.query.redirect !== '/login'
         ? route.query.redirect
         : '/dashboard';
-      
+
       await router.replace(targetPath);
     } catch (error) {
       console.error('Login error:', error);
@@ -536,7 +546,7 @@ const handleRegister = () => {
         captchaCode: '',
         uuid: ''
       };
-      
+
       fetchCaptcha();
     } catch (error) {
       console.error('Register error:', error);
@@ -600,7 +610,7 @@ onUnmounted(() => {
   position: relative;
   width: 50%;
   min-height: 100%;
-  background-image: url('../../../assets/login-bg.png');
+  background-image: url('../../../assets/login-bg.svg');
   background-size: cover;
   background-position: center;
   transition: transform 0.5s ease;
@@ -613,7 +623,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(16, 24, 48, 0.45) 0%, rgba(20, 20, 42, 0.25) 100%);
+  background: linear-gradient(180deg, rgba(240, 249, 255, 0) 50%, rgba(219, 234, 254, 0.75) 100%);
   z-index: 1;
 }
 
@@ -624,8 +634,7 @@ onUnmounted(() => {
   left: 60px;
   right: 40px;
   z-index: 2;
-  color: #ffffff;
-  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  color: #1e293b;
 }
 
 .visual-title {
@@ -633,11 +642,12 @@ onUnmounted(() => {
   font-weight: 700;
   margin: 0 0 10px 0;
   letter-spacing: 1px;
+  color: #1e293b;
 }
 
 .visual-subtitle {
   font-size: 16px;
-  opacity: 0.88;
+  color: #475569;
   margin: 0;
   line-height: 1.5;
 }

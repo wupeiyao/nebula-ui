@@ -8,8 +8,8 @@
             <el-icon><UserFilled /></el-icon>
           </div>
           <div class="app-title-text">
-            <h2>我的应用 · 客户大屏工作台</h2>
-            <p>实时订单计时 · 专属陪玩管理 · 账户资金与服务明细</p>
+            <h2>尊贵的 {{ currentCustomerName || '客户' }}，欢迎您！</h2>
+<!--            <p>实时订单计时 · 专属陪玩管理 · 账户资金与服务明细</p>-->
           </div>
         </div>
       </div>
@@ -302,7 +302,7 @@
           stripe
         >
           <el-table-column type="index" label="序号" width="60" align="center" />
-          
+
           <el-table-column prop="changeType" label="变动类型" width="120" align="center">
             <template #default="scope">
               <el-tag :type="getLogTypeTag(scope.row.changeType)" size="small">
