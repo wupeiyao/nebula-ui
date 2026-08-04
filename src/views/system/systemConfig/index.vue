@@ -10,7 +10,7 @@
               <el-icon v-else class="preview-logo-icon"><Platform /></el-icon>
             </div>
             <div class="preview-info">
-              <h2 class="preview-title">{{ form.sysName || '涛涛电竞游戏陪玩平台' }}</h2>
+              <h2 class="preview-title">{{ form.sysName || '桃桃陪伴平台' }}</h2>
               <div class="preview-tags">
                 <el-tag size="large" type="primary" effect="dark">{{ form.sysVersion || 'v1.0.0' }}</el-tag>
                 <el-tag v-if="form.maintenanceMode === '1'" size="large" type="danger" effect="dark">维护模式中</el-tag>
@@ -40,7 +40,7 @@
           <el-tab-pane label="基础信息" name="basic">
             <el-form ref="basicFormRef" :model="form" :rules="rules" label-width="140px" class="tab-form">
               <el-form-item label="系统名称" prop="sysName">
-                <el-input v-model="form.sysName" placeholder="请输入系统名称，如：涛涛电竞一体化运营平台" maxlength="100" show-word-limit size="large" />
+                <el-input v-model="form.sysName" placeholder="请输入系统名称，如：桃桃陪伴平台" maxlength="100" show-word-limit size="large" />
               </el-form-item>
 
               <el-form-item label="系统 Logo" prop="sysLogo">

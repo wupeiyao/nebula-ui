@@ -4,12 +4,12 @@ import { getPublicSystemConfig, getSystemConfig, updateSystemConfig as updateSys
 export const useSystemConfigStore = defineStore('systemConfig', {
   state: () => ({
     configId: '1',
-    sysName: '涛涛电竞游戏陪玩平台',
+    sysName: '桃桃陪伴平台',
     sysLogo: '',
     sysVersion: 'v1.0.0',
     sysCopyright: '© 2026 Nebula Game Companion Platform All Rights Reserved',
     sysIcp: '京ICP备20268888号',
-    sysNotice: '欢迎使用涛涛电竞游戏陪玩平台！',
+    sysNotice: '欢迎使用桃桃陪伴平台！',
     sysTheme: '#007EFF',
     maintenanceMode: '0',
     watermarkEnabled: '0',
@@ -69,7 +69,7 @@ export const useSystemConfigStore = defineStore('systemConfig', {
      */
     setConfigData(data) {
       if (data.configId) this.configId = data.configId;
-      if (data.sysName !== undefined) this.sysName = data.sysName || '涛涛电竞游戏陪玩平台';
+      if (data.sysName !== undefined) this.sysName = data.sysName || '桃桃陪伴平台';
       if (data.sysLogo !== undefined) this.sysLogo = data.sysLogo || '';
       if (data.sysVersion !== undefined) this.sysVersion = data.sysVersion || 'v1.0.0';
       if (data.sysCopyright !== undefined) this.sysCopyright = data.sysCopyright || '';

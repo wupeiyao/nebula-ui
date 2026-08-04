@@ -44,7 +44,7 @@
       <div class="welcome-header">
         <!-- 按照要求显示系统Logo与系统名称 -->
         <img v-if="systemConfigStore.sysLogo" :src="systemConfigStore.sysLogo" class="sys-logo" alt="Logo" />
-        <h1 class="welcome-title">欢迎进入{{ systemConfigStore.sysName || '游戏陪玩运营管理平台' }}</h1>
+        <h1 class="welcome-title">欢迎进入{{ systemConfigStore.sysName || '桃桃陪伴平台' }}</h1>
       </div>
 
       <p class="welcome-desc">
