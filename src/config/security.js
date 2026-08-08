@@ -3,7 +3,8 @@
  */
 export default {
   // 后端接口 Base URL（对应后端 application.yml 中的 12568 端口）
-  baseURL: 'http://localhost:12568',
+  baseURL: '/api',
+  // baseURL: 'http://localhost:12568',
 
   // 国密 SM2 公钥 (未压缩格式，以 04 开头，十六进制字符串)
   // 后端解密时使用相匹配的私钥进行解密。

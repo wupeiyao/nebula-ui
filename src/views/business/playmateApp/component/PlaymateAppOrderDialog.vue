@@ -21,7 +21,7 @@
                 <span class="dot-flash"></span> 陪玩工作台专享
               </el-tag>
             </div>
-            <p class="sub-title">陪玩自主选择包车/拼车模式 · 多老板将自动分发多条独立拼车订单</p>
+            <p class="sub-title">陪玩个人独立定价服务 · 支持关联多老板与同行陪玩组队</p>
           </div>
         </div>
       </div>
@@ -30,7 +30,7 @@
     <div class="dialog-content-body">
       <el-form ref="orderFormRef" :model="createForm" label-position="top" class="order-create-form">
         
-        <!-- 1. 基础配置与游戏项目卡片 -->
+        <!-- 1. 基础配置与服务项目卡片 -->
         <div class="form-card-section">
           <div class="card-section-header">
             <div class="csh-title">
@@ -39,7 +39,7 @@
               </div>
               <span>核心配置与服务项目</span>
             </div>
-<!--            <span class="csh-sub">单价读取系统字典</span>-->
+            <span class="csh-sub">按陪玩个人接单价格计费</span>
           </div>
 
           <div class="card-section-body">
@@ -55,15 +55,10 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item label="租赁结算模式" class="custom-form-item">
+              <el-form-item label="陪玩个人接单单价" class="custom-form-item">
                 <div class="mode-price-showcase">
-                  <el-radio-group v-model="createForm.rentalType" @change="handleRentalTypeChange" size="default">
-                    <el-radio-button label="CHARTER" :disabled="selectedBossList.length > 1">包车模式</el-radio-button>
-                    <el-radio-button label="CARPOOL">拼车模式</el-radio-button>
-                  </el-radio-group>
-
                   <div class="price-chip-box">
-                    <span class="chip-label">扣费单价:</span>
+                    <span class="chip-label">接单单价:</span>
                     <span class="chip-price">￥{{ formatAmount(createForm.hourlyRate) }}</span>
                     <span class="chip-unit">/ 小时</span>
                   </div>
@@ -75,15 +70,7 @@
             <div class="notice-info-strip">
               <el-icon class="notice-icon"><InfoFilled /></el-icon>
               <div class="notice-text">
-                <template v-if="selectedBossList.length > 1">
-                  当前已接入 <b>{{ selectedBossList.length }}</b> 位老板：系统将自动分发生成 <b>{{ selectedBossList.length }} 条独立拼车订单</b>（按优惠价 <b>￥{{ formatAmount(rentalPriceDict.CARPOOL) }}元/小时</b> 独立扣费与计时，方便老板提前下车）。
-                </template>
-                <template v-else-if="createForm.rentalType === 'CHARTER'">
-                  当前为 <b>【包车模式】</b>（按标准单价 <b>￥{{ formatAmount(rentalPriceDict.CHARTER) }}元/小时</b>）：独享服务，支持邀请同行陪玩搭档。<b>注意：包车订单未结束前不能再创建新订单！</b>
-                </template>
-                <template v-else>
-                  当前为 <b>【拼车模式】</b>（按优惠价 <b>￥{{ formatAmount(rentalPriceDict.CARPOOL) }}元/小时</b>）：单老板拼车服务，不支持同行陪玩。<b>拼车服务中后续仍可继续创建新订单。</b>
-                </template>
+                提示：本订单将统一按您个人设置的接单价格（<b>￥{{ formatAmount(createForm.hourlyRate) }}元/小时</b>）进行计费与收益结算。支持同时拉入多位老板（将自动分发生成多条独立订单），也可以自由邀请同行陪玩组队服务。
               </div>
             </div>
           </div>
@@ -139,9 +126,9 @@
                   </template>
                 </el-table-column>
 
-                <el-table-column label="小时扣费 (字典)" width="150" align="center">
+                <el-table-column label="小时扣费单价" width="150" align="center">
                   <template #default="scope">
-                    <el-tag :type="createForm.rentalType === 'CARPOOL' ? 'warning' : 'danger'" effect="plain" class="rate-tag">
+                    <el-tag type="danger" effect="plain" class="rate-tag">
                       ￥{{ formatAmount(scope.row.hourlyRate) }} / h
                     </el-tag>
                   </template>
@@ -170,15 +157,15 @@
           </div>
         </div>
 
-        <!-- 3. 同行陪玩卡片 (仅单老板包车模式可用) -->
-        <div v-if="createForm.rentalType === 'CHARTER' && selectedBossList.length <= 1" class="form-card-section">
+        <!-- 3. 同行陪玩卡片 -->
+        <div class="form-card-section">
           <div class="card-section-header">
             <div class="csh-title">
               <div class="csh-icon-box bg-emerald">
                 <el-icon><UserFilled /></el-icon>
               </div>
               <span>同行陪玩搭档</span>
-              <span class="csh-tag-desc">仅包车单老板模式可用</span>
+              <span class="csh-tag-desc">组队服务同行协助</span>
             </div>
 
             <el-button type="success" plain class="btn-gradient-green" @click="playmateDialogVisible = true">
@@ -204,7 +191,7 @@
 
             <div v-else class="empty-pm-card" @click="playmateDialogVisible = true">
               <el-icon class="empty-pm-icon"><UserFilled /></el-icon>
-              <span>暂未邀请同行陪玩。若老板点了多位陪玩，可点击弹窗挑选同行组队</span>
+              <span>暂未邀请同行陪玩。可点击弹窗挑选同行组队协助</span>
             </div>
           </div>
         </div>
@@ -266,6 +253,8 @@ import {
 } from '@element-plus/icons-vue';
 import { addOrder } from '../../../../api/business/order.js';
 import { getDicts } from '../../../../api/system/dict.js';
+import { getUserInfo } from '../../../../api/auth/auth.js';
+import { getPlaymate } from '../../../../api/business/playmate.js';
 import CustomerSelectDialog from '../../order/component/CustomerSelectDialog.vue';
 import PlaymateSelectDialog from '../../order/component/PlaymateSelectDialog.vue';
 import { ElMessage } from 'element-plus';
@@ -295,10 +284,6 @@ const customerDialogVisible = ref(false);
 const playmateDialogVisible = ref(false);
 
 const gameTypeOptions = ref([]);
-const rentalPriceDict = reactive({
-  CHARTER: 50.00,
-  CARPOOL: 20.00
-});
 
 const selectedBossList = ref([]);
 const selectedPlaymateList = ref([]);
@@ -306,7 +291,7 @@ const selectedPlaymateList = ref([]);
 const createForm = reactive({
   rentalType: 'CHARTER',
   serviceType: '王者荣耀',
-  hourlyRate: 50.00,
+  hourlyRate: 0.00,
   remark: ''
 });
 
@@ -315,7 +300,7 @@ function formatAmount(val) {
   return Number(val).toFixed(2);
 }
 
-/** 从字典读取服务项目与单价配置 */
+/** 从字典读取服务项目 */
 function loadDictOptions() {
   getDicts('playmate_game_type').then(res => {
     const list = res.data || res.result || res || [];
@@ -326,51 +311,29 @@ function loadDictOptions() {
       }
     }
   }).catch(() => {});
+}
 
-  getDicts('playmate_rental_price').then(res => {
-    const list = res.data || res.result || res || [];
-    if (Array.isArray(list)) {
-      list.forEach(item => {
-        if (item.dictCode === 'CHARTER' || item.dictValue === 'CHARTER' || item.dictLabel?.includes('包车')) {
-          rentalPriceDict.CHARTER = parseFloat(item.dictValue) || 50.00;
-        } else if (item.dictCode === 'CARPOOL' || item.dictValue === 'CARPOOL' || item.dictLabel?.includes('拼车')) {
-          rentalPriceDict.CARPOOL = parseFloat(item.dictValue) || 20.00;
+/** 获取当前陪玩的接单单价 pricePerOrder */
+function loadPlaymateProfilePrice() {
+  getUserInfo().then(res => {
+    const userRes = res.result || res.data || res;
+    const userId = userRes.user?.userId || userRes.userId;
+    if (userId) {
+      getPlaymate(userId).then(pmRes => {
+        const pmData = pmRes.result || pmRes.data || pmRes;
+        if (pmData && pmData.pricePerOrder !== undefined && pmData.pricePerOrder !== null) {
+          createForm.hourlyRate = Number(pmData.pricePerOrder) || 0;
+          selectedBossList.value.forEach(boss => {
+            boss.hourlyRate = createForm.hourlyRate;
+          });
         }
-      });
-      recalculateRentalTypeAndPrice();
+      }).catch(() => {});
     }
   }).catch(() => {});
 }
 
-/** 陪玩手动切换租赁模式 */
-function handleRentalTypeChange(val) {
-  if (val === 'CARPOOL') {
-    createForm.hourlyRate = rentalPriceDict.CARPOOL || 20.00;
-    selectedPlaymateList.value = []; // 拼车模式不可选同行陪玩
-  } else {
-    createForm.hourlyRate = rentalPriceDict.CHARTER || 50.00;
-  }
-  selectedBossList.value.forEach(boss => {
-    boss.hourlyRate = createForm.hourlyRate;
-  });
-}
-
-/** 智能根据老板人数判别或调整租赁模式与字典单价 */
-function recalculateRentalTypeAndPrice() {
-  const count = selectedBossList.value.length;
-  if (count > 1) {
-    createForm.rentalType = 'CARPOOL';
-    createForm.hourlyRate = rentalPriceDict.CARPOOL || 20.00;
-    selectedPlaymateList.value = []; // 拼车不可选同行
-  } else {
-    if (!createForm.rentalType) {
-      createForm.rentalType = 'CHARTER';
-    }
-    createForm.hourlyRate = createForm.rentalType === 'CARPOOL'
-      ? (rentalPriceDict.CARPOOL || 20.00)
-      : (rentalPriceDict.CHARTER || 50.00);
-  }
-
+/** 同步刷新已选老板单价 */
+function syncBossHourlyRate() {
   selectedBossList.value.forEach(boss => {
     boss.hourlyRate = createForm.hourlyRate;
   });
@@ -389,21 +352,17 @@ function handleSelectCustomers(customers) {
       });
     }
   });
-  recalculateRentalTypeAndPrice();
+  syncBossHourlyRate();
 }
 
 /** 移除老板 */
 function removeBoss(index) {
   selectedBossList.value.splice(index, 1);
-  recalculateRentalTypeAndPrice();
+  syncBossHourlyRate();
 }
 
 /** 弹窗选择同行陪玩回调 */
 function handleSelectPlaymates(playmates) {
-  if (createForm.rentalType !== 'CHARTER' || selectedBossList.value.length > 1) {
-    ElMessage.warning("拼车模式不可添加同行陪玩搭档！只有包车模式支持同行协助。");
-    return;
-  }
   if (!Array.isArray(playmates)) playmates = [playmates];
   playmates.forEach(p => {
     const pId = p.userId || p.id;
@@ -434,13 +393,13 @@ function submitCreateOrder() {
 
   submitLoading.value = true;
   const req = {
-    rentalType: createForm.rentalType,
+    rentalType: selectedBossList.value.length > 1 ? 'CARPOOL' : 'CHARTER',
     serviceType: createForm.serviceType,
     hourlyRate: createForm.hourlyRate,
     remark: createForm.remark,
     customers: selectedBossList.value.map(c => ({
       customerId: c.userId || c.id,
-      hourlyRate: c.hourlyRate
+      hourlyRate: c.hourlyRate || createForm.hourlyRate
     })),
     playmates: selectedPlaymateList.value.map(p => ({
       playmateId: p.userId || p.id
@@ -461,11 +420,11 @@ watch(() => props.visible, (newVal) => {
     selectedBossList.value = [];
     selectedPlaymateList.value = [];
     createForm.remark = '';
-    recalculateRentalTypeAndPrice();
+    loadDictOptions();
+    loadPlaymateProfilePrice();
     if (props.initialCustomer) {
       handleSelectCustomers([props.initialCustomer]);
     }
-    loadDictOptions();
   }
 });
 </script>
