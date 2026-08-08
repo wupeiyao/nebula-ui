@@ -5,7 +5,7 @@
       <div class="login-visual-panel">
         <div class="visual-overlay"></div>
         <div class="visual-content">
-          <h2 class="visual-title">涛涛电竞游戏陪玩平台</h2>
+          <h2 class="visual-title">{{ sysName }}</h2>
           <p class="visual-subtitle">
             {{ activeTab === 'login' ? '寻找默契玩伴，开启你的上分之旅' : '注册成为客户，尽享专业配对与预约服务' }}
           </p>
@@ -36,7 +36,7 @@
           <!-- 头部标题 -->
           <div class="form-header">
             <h1 class="brand-title">
-              {{ activeTab === 'login' ? '涛涛电竞游戏陪玩平台' : '' }}
+              {{ activeTab === 'login' ? sysName : '' }}
             </h1>
             <p class="brand-subtitle">
               <template v-if="activeTab === 'login'">
@@ -279,16 +279,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { User, Lock, Key, Message, Iphone, UserFilled } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useAuthStore } from '../../../store/auth.js';
+import { useSystemConfigStore } from '../../../store/systemConfig.js';
 import { getCaptcha, register, sendEmailCode } from '../../../api/auth/auth.js';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const systemConfigStore = useSystemConfigStore();
+
+const sysName = computed(() => systemConfigStore.sysName || '桃桃陪伴平台');
 
 // 当前 Tab 状态: 'login' | 'register'
 const activeTab = ref('login');
@@ -567,6 +571,7 @@ const handleForgot = () => {
 
 onMounted(() => {
   fetchCaptcha();
+  systemConfigStore.fetchPublicConfig();
 });
 
 onUnmounted(() => {
@@ -623,7 +628,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(240, 249, 255, 0) 50%, rgba(219, 234, 254, 0.75) 100%);
+  background: linear-gradient(180deg, rgba(255, 245, 247, 0) 45%, rgba(252, 231, 243, 0.65) 75%, rgba(224, 231, 255, 0.75) 100%);
   z-index: 1;
 }
 
